@@ -22,7 +22,7 @@ Key features
     * Automatically check and archive build outputs.
     * Preprocess and update files during a build to enable features such as automatically updating version registers.
     * Build and test projects using one procedure to reduce the learning curve for new starters and reduce the burden on code reviewers.
-    * Free and open source under the `Apache 2.0 License <https://www.apache.org/licenses/LICENSE-2.0/>`_.
+    * Free and open source under the `Apache 2.0 License <https://www.apache.org/licenses/LICENSE-2.0>`_.
 
 Supported Tools
 ===============
