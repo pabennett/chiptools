@@ -82,6 +82,7 @@ class UnitTestFile(object):
     def __init__(self, **kwargs):
         self.path = kwargs[ProjectAttributes.XML_ATTRIBUTE_PATH]
         self.fileType = FileType.Python
+        self.testsuite = None
 
 
 class File(object):
