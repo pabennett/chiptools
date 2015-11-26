@@ -3,115 +3,123 @@ import logging
 import traceback
 import sys
 import os
-import datetime
-from collections import OrderedDict
-import inspect
-import imp
+import importlib.machinery
 
 from chiptools.common import utils
 
 log = logging.getLogger(__name__)
 
 
-def test_factory(
-    tool_wrapper,
-    simulation_path,
-    simulation_libraries,
-    shim,
-    shimSetUp,
-    shimRunCheck,
-    shimTearDown
-):
-    """Return a Unittest class from the shim"""
+test_package_module_name = 'chiptools_unit_test_temporary_module'
 
-    simulator = tool_wrapper.get_tool(
-        tool_type='simulation'
-    )
 
-    def wrappedSetUp(self):
-        shimSetUp(simulationRoot=simulation_path)
+class ChipToolsTest(unittest.TestCase):
 
-    def wrappedTearDown(self):
-        shimTearDown(simulationRoot=simulation_path)
+    """The ChipToolsTest class inherits unittest.TestCase and should be used
+    as a base class for any unit tests that are included in your Project.
+    The ChipToolsTest class implements a setUp method to execute your chosen
+    simulator prior to each of the tests defined in your unit tests. After
+    the simulator has executed, the return code, stdout stream and stderr
+    stream are captured and stored in following attributes:
+        * self.sim_ret_val (simulator return code)
+        * self.sim_stdout (simulator stdout as string)
+        * self.sim_stderr (simulator stderr as string)
+        * self.simulation_root (path to the simulator working directory)
 
-    def wrappedTest(self):
+    Additional attibutes belonging to the ChipToolsTest class that you should
+    override are:
+        * self.duration (a float number of seconds to run the simulation for,
+            if 0 the simulator will run until the testbench terminates)
+        * self.generics (a dictionary of name:value where *name* is the name
+            of a testbench port generic and *value* is the value to be
+            assigned to the port generic) (*this is an optional attribute*)
+        * self.entity (the name of the entity that this testcase targets)
+        * self.library (the library in which the entity targeted by this
+            testcase resides)
+
+    Refer to the *examples* directory for demonstrations on how to create unit
+    tests.
+    """
+
+    duration = 0
+    generics = {}
+    entity = ''
+    library = ''
+    sim_stdout = ''
+    sim_stderr = ''
+    sim_ret_val = 0
+
+    def postImport(self, tool_wrapper, simulation_libraries, simulation_path):
+        """
+        Store project environment information so that it is available to
+        testcases when they are run.
+        """
+        self.tool_wrapper = tool_wrapper
+        self.simulation_libraries = simulation_libraries
+        self.simulation_root = simulation_path
+
+    def simulationSetUp(self):
+        """The ChipTools test framework will call the simulationSetup method
+        prior to executing the simulator. Place any code that is required to
+        prepare simulator inputs in this method."""
+        pass
+
+    def simulationTearDown(self):
+        """The ChipTools test framework will call the simulationTearDown method
+        after completing the tests. Insert any cleanup code to remove generated
+        files in this method."""
+        pass
+
+    def setUp(self):
+        # Run user setup first
+        self.simulationSetUp()
+
         # Simulate the testbench
-        if shim.duration <= 0:
+        # TODO: Not all simulators may support this TCL format, move this to
+        # the tool-specific wrappers.
+        if self.duration <= 0:
             duration = '-all'
         else:
-            duration = utils.seconds_to_timestring(shim.duration)
+            duration = utils.seconds_to_timestring(self.duration)
 
-        if len(shim.generics.keys()) == 0:
+        if len(self.generics.keys()) == 0:
             log.warning(
                 'No generics are supplied by this test case, if the ' +
                 'testbench uses generics' +
                 ' they will assume their default values.'
             )
+        simulator = self.tool_wrapper.get_tool(
+            tool_type='simulation'
+        )
 
-        retVal, stdout, stderr = simulator.simulate(
-            library=shim.library,
-            entity=shim.entity,
-            includes=simulation_libraries,
+        ret_val, stdout, stderr = simulator.simulate(
+            library=self.library,
+            entity=self.entity,
+            includes=self.simulation_libraries,
             do=(
                 'set NumericStdNoWarnings 1\n' + 'run ' +
                 duration + ';quit'
             ),
-            generics=shim.generics,
+            generics=self.generics,
             gui=False
         )
-        # Make a copy of the stdout in the simulation path for reference
-        filename = (
-            shim.entity +
-            '_' +
-            shim.library +
-            '_' +
-            shimRunCheck.__name__ +
-            '_' +
-            datetime.datetime.now().strftime('%d%m%y_%H%M%S') +
-            '.stdout'
-        )
-        with open(os.path.join(simulation_path, filename), 'w') as f:
-            f.write(stdout)
-        # When the simulator has completed the test shim runChecks
-        # method can be called
-        testResult, testMessage = shimRunCheck(
-            simulationRoot=simulation_path,
-            stdout=stdout,
-            stderr=stderr
-        )
-        if not testResult:
-            self.fail(testMessage)
+        self.sim_ret_val = ret_val
+        self.sim_stdout = stdout
+        self.sim_stderr = stderr
 
-    wrappedTest.__doc__ = shimRunCheck.__doc__
-    wrappedSetUp.__doc__ = shimSetUp.__doc__
-    wrappedTearDown.__doc__ = shimTearDown.__doc__
-
-    classDict = {
-        'setUp': wrappedSetUp,
-        'tearDown': wrappedTearDown,
-        'runTest': wrappedTest,
-        'id': lambda x: shimRunCheck.__name__,
-        '__doc__': shim.library + '.' + shim.entity,
-        '__module__': shim.__module__,
-        # TODO: Overriding __class__ like this can be dangerous, but in this
-        # case it is probably OK. Is there a better way of doing this?
-        '__class__': shim.__class__,
-    }
-
-    return type(shim.name, (unittest.TestCase,), classDict)
+    def tearDown(self):
+        # Run user teardown
+        self.simulationTearDown()
 
 
-test_package_module_name = 'chiptools_unit_test_temporary_module'
-
-
-def load_tests(path, tool_wrapper, simulation_path, simulation_libraries={}):
+def load_tests(
+    path,
+    tool_wrapper,
+    simulation_path,
+    simulation_libraries={}
+):
     """Import the test shim python module given by path and return a
     collection of Unittest classes for each of the tests found in the shim"""
-
-    if test_package_module_name in sys.modules:
-        # Clear the reference to the testPackageModule module
-        del sys.modules[test_package_module_name]
-
     if not os.path.exists(path):
         log.error('File not found, aborting test package load: ' + str(path))
         return
@@ -119,8 +127,10 @@ def load_tests(path, tool_wrapper, simulation_path, simulation_libraries={}):
     log.debug('Loading test package: ' + path + '...')
 
     try:
-        imp.load_source(test_package_module_name, path)
-        import chiptools_unit_test_temporary_module
+        module_loader = importlib.machinery.SourceFileLoader(
+            'chiptools_tests_' + os.path.basename(path).split('.')[0],
+            path
+        )
     except:
         log.error(
             'The module could not be imported due to the ' +
@@ -129,101 +139,13 @@ def load_tests(path, tool_wrapper, simulation_path, simulation_libraries={}):
         log.error(traceback.format_exc())
         return None
 
-    # The framework inspects all classes contained in the test package and if
-    # they subclass unittest.TestCase it will load any tests found into the
-    # test suite for that file
-    tests = OrderedDict()
-    for name, obj in inspect.getmembers(chiptools_unit_test_temporary_module):
-        if inspect.isclass(obj):
-            if issubclass(obj, unittest.TestCase):
-                try:
-                    testPackage = obj()
-                except Exception:
-                    log.error(
-                        'An error was encountered when instancing the ' +
-                        'unittest: ' + path +
-                        ' This test will not be unpacked or included ' +
-                        'in the testsuite.'
-                    )
-                    log.error('Refer to the traceback for more information.')
-                    log.error(traceback.format_exc())
-                    return None
-                if not hasattr(testPackage, 'tests'):
-                    log.error(
-                        'No test attribute is present in this unittest' +
-                        ', skipping.'
-                    )
-                    continue
-                tests[name] = OrderedDict()
-                # Generate unit tests from the tests found in the testPackage
-                for testName in sorted(testPackage.tests.keys()):
-                    testObject = testPackage.tests[testName]
-                    if type(testObject) is not tuple:
-                        log.error(
-                            testName +
-                            ' does not supply a tuple of functions: ' +
-                            '(setup, check, teardown) ' +
-                            'and will be disabled.'
-                        )
-                        continue
-                    setUp, runCheck, tearDown = testObject
-                    if not callable(setUp):
-                        log.error(
-                            testName +
-                            ' setupFunction not a callable function, ' +
-                            'this test will be disabled.'
-                        )
-                        continue
-                    if not callable(runCheck):
-                        log.error(
-                            testName +
-                            ' runCheckFunction not a callable function, ' +
-                            'this test will be disabled.'
-                        )
-                        continue
-                    if not callable(tearDown):
-                        log.error(
-                            testName +
-                            ' tearDownFunction not a callable function, ' +
-                            'this test will be disabled.'
-                        )
-                        continue
+    #if test_package_module_name in sys.modules:
+    #    # Clear the reference to the testPackageModule module
+    #    del sys.modules[test_package_module_name]
 
-                    try:
-                        testClass = test_factory(
-                            tool_wrapper,
-                            simulation_path,
-                            simulation_libraries,
-                            testPackage,
-                            setUp,
-                            runCheck,
-                            tearDown
-                        )
-                        testInstance = testClass()
-                        tests[name][testName] = testInstance
-                    except Exception:
-                        log.error(
-                            'The test factory encountered an error while ' +
-                            'unpacking ' + testName
-                        )
-                        log.error(
-                            'This test will not be included in the test ' +
-                            'suite for ' + path
-                        )
-                        log.error(
-                            'Refer to the traceback for more information.'
-                        )
-                        log.error(traceback.format_exc())
+    test_loader = unittest.TestLoader()
+    suite = test_loader.loadTestsFromModule(
+        module_loader.load_module()
+    )
 
-                log.info(
-                    'Unpacked {0} test(s) from testPackage {1}'.format(
-                        str(len(tests[name].keys())),
-                        obj.__name__,
-                    )
-                )
-            else:
-                log.warning(
-                    'Ignoring ' + str(name) + '(' + str(obj) + ') in ' +
-                    str(path) + ' as it does not subclass unittest.TestCase.'
-                )
-    return tests
+    return suite

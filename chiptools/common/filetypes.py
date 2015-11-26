@@ -14,6 +14,7 @@ class FileType(Enum):
     TCL = 5  # TCL
     UCF = 6  # Universal constraints format
     SDC = 7  # Synopsis design constraints
+    Python = 8
 
 # Mapping of file extensions to FileType objects
 fileExtensionsLookup = {
@@ -24,6 +25,7 @@ fileExtensionsLookup = {
     '.ngc': FileType.NGCNetlist,
     '.tcl': FileType.TCL,
     '.sdc': FileType.SDC,
+    '.py': FileType.Python,
 }
 
 
@@ -37,10 +39,10 @@ class ProjectAttributes:
     XML_NODE_TEXT = '#text'
     XML_NODE_CONSTRAINTS = 'constraints'
     XML_NODE_GENERIC = 'generic'
+    XML_NODE_UNITTEST = 'unittest'
     # XML attributes identify parameters that can be applied to XML nodes.
     XML_ATTRIBUTE_NAME = 'name'
     XML_ATTRIBUTE_PATH = 'path'
-    XML_ATTRIBUTE_UNITTEST = 'unittest'
     XML_ATTRIBUTE_PREPROCESSOR = 'preprocessor'
     XML_ATTRIBUTE_SYNTHESIS = 'synthesise'
     # These XML attributes are required configuration attributes that control
@@ -75,6 +77,13 @@ class ProjectAttributes:
     )
 
 
+class UnitTestFile(object):
+    """The UnitTestFile object provides a container for Python test shims."""
+    def __init__(self, **kwargs):
+        self.path = kwargs[ProjectAttributes.XML_ATTRIBUTE_PATH]
+        self.fileType = FileType.Python
+
+
 class File(object):
     """
     The File object contains properties of a design source file that has been
@@ -86,9 +95,6 @@ class File(object):
         self.library = library
         # MD5 sum for change detection
         self.md5 = ''
-        # A processed testsuite that can be run on this file, this is set by
-        # the test manager when running tests.
-        self.testsuite = None
         # The path to this source file
         self.path = kwargs[ProjectAttributes.XML_ATTRIBUTE_PATH]
         # A flag to indicate whether or not this file should be included for
@@ -98,12 +104,6 @@ class File(object):
             True
         )
         self.synthesise = True if self.synthesise is None else self.synthesise
-        # Path to a Python unittest shim that can be used to run tests on this
-        # file.
-        self.testsuite_path = kwargs.get(
-            ProjectAttributes.XML_ATTRIBUTE_UNITTEST,
-            None
-        )
         # The preprocessor is a path to a Python module containing a
         # preprocessor object that can edit the associated source file before
         # it is passed to synthesis.

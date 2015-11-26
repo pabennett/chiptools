@@ -29,7 +29,6 @@ class XmlProjectParser:
     # Process each of the file attributes using the following functions
     XML_NODE_PROCESSOR = {
         ProjectAttributes.XML_ATTRIBUTE_PATH: utils.format_paths,
-        ProjectAttributes.XML_ATTRIBUTE_UNITTEST: utils.format_paths,
         ProjectAttributes.ATTRIBUTE_SIM_DIR: utils.format_paths,
         ProjectAttributes.ATTRIBUTE_SYNTH_DIR: utils.format_paths,
         ProjectAttributes.XML_ATTRIBUTE_PREPROCESSOR: utils.format_paths,
@@ -42,7 +41,6 @@ class XmlProjectParser:
     }
     FILE_DEFAULTS = {
         ProjectAttributes.XML_ATTRIBUTE_PATH: None,
-        ProjectAttributes.XML_ATTRIBUTE_UNITTEST: None,
         ProjectAttributes.XML_ATTRIBUTE_PREPROCESSOR: None,
         ProjectAttributes.ATTRIBUTE_REPORTER: None,
         ProjectAttributes.XML_ATTRIBUTE_SYNTHESIS: None,
@@ -59,7 +57,7 @@ class XmlProjectParser:
         Load the project XML file provided by the *path*.
         """
         log.info('Loading project: ' + str(path))
-
+        project_object.initialise()
         base_name = os.path.basename(path).split('.')[0]
         cache_path = os.path.join(
             os.path.dirname(path),
@@ -164,6 +162,14 @@ class XmlProjectParser:
                         ProjectAttributes.XML_NODE_CONSTRAINTS
                     ):
                         XmlProjectParser._add_constraints(
+                            child,
+                            project_root,
+                            project_object,
+                        )
+                    elif child.nodeName == (
+                        ProjectAttributes.XML_NODE_UNITTEST
+                    ):
+                        XmlProjectParser._add_unittest(
                             child,
                             project_root,
                             project_object,
@@ -337,6 +343,16 @@ class XmlProjectParser:
         path = attribs['path']
         del attribs['path']
         project_object.add_constraints(
+            path,
+            **attribs
+        )
+
+    @staticmethod
+    def _add_unittest(child, root, project_object):
+        attribs = XmlProjectParser._get_node_attributes(child, root)
+        path = attribs['path']
+        del attribs['path']
+        project_object.add_unittest(
             path,
             **attribs
         )

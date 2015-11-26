@@ -279,34 +279,35 @@ class CommandLine(cmd.Cmd):
         """
         tests = self.project.get_tests()
 
-        if len(tests) > 0:
-            testId = 0
-            for file_object in tests:
-                file_name = os.path.basename(file_object.path)
-                print(term.yellow(file_name))
-                for group_name, test_suite in file_object.testsuite.items():
-                    if len(test_suite.items()) > 0:
-                        print(SEP + term.green(group_name))
-                        for test_name, test in test_suite.items():
-                            doc = test.runTest.__doc__
-                            if doc is None:
-                                doc = term.darkred('No description')
-                            if testId in self.test_set:
-                                msg = SEP * 2 + '[' + term.blue('ID ' + str(
-                                    testId) + ' ' + test_name
-                                ) + ']'
-                            else:
-                                msg = SEP * 2 + term.lightgray('ID ' + str(
-                                    testId) + ' ' + test_name
-                                )
-                            print(msg)
-                            print(term.darkgray(textwrap.fill(
-                                doc,
-                                width=80,
-                                initial_indent=SEP * 2,
-                                subsequent_indent=SEP * 2,
-                            )))
-                            testId += 1
+        testUniqueId = 0
+        for file_object in tests:
+            file_name = os.path.basename(file_object.path)
+            print(term.yellow(file_name))
+            for test_group in file_object.testsuite:
+                for testId, test in enumerate(test_group):
+                    if testId == 0:
+                        print(
+                            SEP + term.green(str(test.__class__.__name__))
+                        )
+                    doc = test.shortDescription()
+                    if doc is None:
+                        doc = term.darkred('No description')
+                    if testUniqueId in self.test_set:
+                        msg = SEP * 2 + '[' + term.blue('ID ' + str(
+                            testUniqueId) + ' ' + test.id().split('.')[-1]
+                        ) + ']'
+                    else:
+                        msg = SEP * 2 + term.lightgray('ID ' + str(
+                            testUniqueId) + ' ' + test.id().split('.')[-1]
+                        )
+                    print(msg)
+                    print(term.darkgray(textwrap.fill(
+                        doc,
+                        width=80,
+                        initial_indent=SEP * 2,
+                        subsequent_indent=SEP * 2,
+                    )))
+                    testUniqueId += 1
 
     def show_test_selection(self):
         """
@@ -318,8 +319,12 @@ class CommandLine(cmd.Cmd):
         tests = []
         for file_object in self.project.get_tests():
             file_name = os.path.basename(file_object.path)
-            for groupName, testSuite in file_object.testsuite.items():
-                for testName, test in testSuite.items():
+            print(term.yellow(file_name))
+            for test_group in file_object.testsuite:
+                for testId, test in enumerate(test_group):
+                    if testId == 0:
+                        groupName = str(test.__class__.__name__)
+                    testName = test.id().split('.')[-1]
                     tests.append((file_name, groupName, testName, test))
 
         # Filter out any invalid indices

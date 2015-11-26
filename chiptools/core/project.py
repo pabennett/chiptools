@@ -10,6 +10,7 @@ from chiptools.common import utils
 from chiptools.common.filetypes import File
 from chiptools.common.filetypes import Constraints
 from chiptools.common.filetypes import ProjectAttributes
+from chiptools.common.filetypes import UnitTestFile
 from chiptools.core.preprocessor import Preprocessor
 from chiptools.core import reporter
 from chiptools.core.cache import FileCache
@@ -24,7 +25,9 @@ log = logging.getLogger(__name__)
 class Project:
     def __init__(self):
         super(Project, self).__init__()
+        self.initialise()
 
+    def initialise(self):
         self.options = options.Options()
         self.tool_wrapper = ToolWrapper(
             self,
@@ -38,6 +41,7 @@ class Project:
         self.constraints = []
         self.file_list = []
         self.project_data = {}
+        self.tests = []
 
     def set_cache_path(self, cache_path):
         # Update the FileCache to point at the new path
@@ -53,24 +57,6 @@ class Project:
             library=library,
             **attribs
         )
-        # Perform TestSuite loading if this file is linked to a test shim
-        if file_object.testsuite_path is not None:
-            if os.path.exists(file_object.testsuite_path):
-                # Convert the testsuite path into an unpacked testsuite
-                # for each file object that has a link to a test suite.
-                unpacked_testsuite = testloader.load_tests(
-                    file_object.testsuite_path,
-                    self.tool_wrapper,
-                    self.get_simulation_directory(),
-                    simulation_libraries=(
-                        self.options.get_simulator_library_dependencies()
-                    )
-                )
-                # Modify the file object, replacing the testsuite path
-                # string with the testsuite object that we just
-                # unpacked.
-                file_object.testsuite = unpacked_testsuite
-
         if library not in self.project_data:
             self.project_data[library] = []
         if file_object not in self.project_data[library]:
@@ -92,6 +78,28 @@ class Project:
         """Add the given constraints file to the project."""
         path = utils.relativePathToAbs(path, self.root)
         self.constraints.append(Constraints(path=path, **attribs))
+
+    def add_unittest(self, path, **attribs):
+        """Add the given TestSuite file to the project."""
+        path = utils.relativePathToAbs(path, self.root)
+        unit = UnitTestFile(path=path, **attribs)
+        # Perform TestSuite loading on the supplied path
+        if os.path.exists(path):
+            # Convert the testsuite path into an unpacked testsuite
+            # for each file object that has a link to a test suite.
+            unpacked_testsuite = testloader.load_tests(
+                path,
+                self.tool_wrapper,
+                self.get_simulation_directory(),
+                simulation_libraries=(
+                    self.options.get_simulator_library_dependencies()
+                )
+            )
+            # Modify the file object, replacing the testsuite path
+            # string with the testsuite object that we just
+            # unpacked.
+            unit.testsuite = unpacked_testsuite
+        self.tests.append(unit)
 
     def add_config(self, name, value):
         """
@@ -378,10 +386,10 @@ class Project:
 
     def get_tests(self):
         """
-        Return a list of *File* objects that are associated with a *TestSuite*.
+        Return a list of TestSuite objects.
         """
         files_with_tests = list(
-            filter(lambda x: x.testsuite, self.get_files())
+            filter(lambda x: x.testsuite, self.tests)
         )
         return files_with_tests
 
@@ -413,28 +421,38 @@ class Project:
 
         suite = unittest.TestSuite()
         tests = []
+
         for file_object in self.get_tests():
             file_name = os.path.basename(file_object.path)
-            for group_name, test_suite in file_object.testsuite.items():
-                for testName, test in test_suite.items():
-                    tests.append((file_name, group_name, testName, test))
+            for test_group in file_object.testsuite:
+                for testId, test in enumerate(test_group):
+                    # Patch in the simulation runtime data
+                    test.postImport(
+                        self.tool_wrapper,
+                        self.options.get_simulator_library_dependencies(),
+                        self.get_simulation_directory()
+                    )
+                    # Add the test to the library
+                    tests.append((file_name, test))
 
         if len(tests) == 0:
             log.warning('No tests available.')
             return
+
+        # Run all tests by default if no IDs are specified
         if ids is None:
+            ids = list(range(len(tests)))
+        elif len(ids) == 0:
             ids = list(range(len(tests)))
 
         for id in ids:
             if id < len(tests):
-                fileName, groupName, testName, test = tests[id]
+                fileName, test = tests[id]
                 log.info(
-                    str(groupName) + '.' +
-                    str(testName) + ':' +
                     str(test.id())
                 )
                 suite.addTest(test)
-                log.info('Added ' + str(testName) + ' to testsuite')
+                log.info('Added ' + str(test) + ' to testsuite')
 
         log.info('Running testsuite...')
         try:
