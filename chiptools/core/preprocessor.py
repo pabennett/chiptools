@@ -92,6 +92,8 @@ class Preprocessor:
     @classmethod
     def set_file_data(cls, path, fileData):
         """Update the file with the new file data."""
+        if fileData is None:
+            return
         with open(path, 'w') as fileToUpdate:
             for line in fileData:
                 fileToUpdate.write(line)
