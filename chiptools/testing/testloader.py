@@ -1,16 +1,12 @@
 import unittest
 import logging
 import traceback
-import sys
 import os
 import importlib.machinery
 
 from chiptools.common import utils
 
 log = logging.getLogger(__name__)
-
-
-test_package_module_name = 'chiptools_unit_test_temporary_module'
 
 
 class ChipToolsTest(unittest.TestCase):
@@ -138,10 +134,6 @@ def load_tests(
         )
         log.error(traceback.format_exc())
         return None
-
-    #if test_package_module_name in sys.modules:
-    #    # Clear the reference to the testPackageModule module
-    #    del sys.modules[test_package_module_name]
 
     test_loader = unittest.TestLoader()
     suite = test_loader.loadTestsFromModule(
