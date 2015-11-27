@@ -232,7 +232,8 @@ class XmlProjectParser:
                 'Refer to the traceback below for the line number and file.'
             )
             log.error(traceback.format_exc())
-            raise exceptions.ProjectFileException()
+            project_object.initialise()
+            return
         log.debug(filepath + ' parsed in ' + utils.time_delta_string(
             start_time,
             time.time())
