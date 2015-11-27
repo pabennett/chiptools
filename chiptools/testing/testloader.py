@@ -127,6 +127,10 @@ def load_tests(
             'chiptools_tests_' + os.path.basename(path).split('.')[0],
             path
         )
+        test_loader = unittest.TestLoader()
+        suite = test_loader.loadTestsFromModule(
+            module_loader.load_module()
+        )
     except:
         log.error(
             'The module could not be imported due to the ' +
@@ -134,10 +138,5 @@ def load_tests(
         )
         log.error(traceback.format_exc())
         return None
-
-    test_loader = unittest.TestLoader()
-    suite = test_loader.loadTestsFromModule(
-        module_loader.load_module()
-    )
 
     return suite
