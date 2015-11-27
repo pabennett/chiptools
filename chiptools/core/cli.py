@@ -108,7 +108,11 @@ class CommandLine(cmd.Cmd):
         ))
         path = os.path.abspath(path)
         if os.path.exists(path) and os.path.isfile(path):
-            XmlProjectParser.load_project(path, self.project)
+            try:
+                XmlProjectParser.load_project(path, self.project)
+            except:
+                log.error('The project could not be loaded due to an error:')
+                log.error(traceback.format_exc())
         else:
             log.error('File not found: {0}'.format(path))
 
