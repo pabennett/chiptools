@@ -159,18 +159,22 @@ class Project:
         Return the path to the synthesis directory where all synthesis outputs
         will be stored.
         """
-        return os.path.normpath(
-            self.config.get(ProjectAttributes.ATTRIBUTE_SYNTH_DIR, None)
-        )
+        path = self.config.get(ProjectAttributes.ATTRIBUTE_SYNTH_DIR, None)
+        if path is not None:
+            return os.path.normpath(path)
+        else:
+            return None
 
     def get_simulation_directory(self):
         """
         Return the path to the simulation directory where all simulation
         outputs will be stored.
         """
-        return os.path.normpath(
-            self.config.get(ProjectAttributes.ATTRIBUTE_SIM_DIR, None)
-        )
+        path = self.config.get(ProjectAttributes.ATTRIBUTE_SIM_DIR, None)
+        if path is not None:
+            return os.path.normpath(path)
+        else:
+            return None
 
     def get_reporter(self):
         """
