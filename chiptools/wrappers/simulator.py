@@ -97,7 +97,6 @@ class Simulator(ToolchainBase):
                     # md5sum cache to see if it has changed since it was
                     # last compiled
                     if os.path.isfile(file_object.path):
-                        cache.add_file(file_object)
                         if (
                             not force and
                             not cache.is_file_changed(file_object)
@@ -111,6 +110,7 @@ class Simulator(ToolchainBase):
                                         "...skipping: " + file_object.path
                                     )
                                     continue
+                        cache.add_file(file_object)
                         # Map or create the library, track which libraries
                         # were already created
                         if (

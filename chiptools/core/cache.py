@@ -32,7 +32,7 @@ class FileCache:
     cache_file_name = '_compilation.cache'
     field_id_files = 'FILES'
     field_id_libraries = 'LIBRARIES'
-    black_cache_structure = {
+    blank_cache_structure = {
         field_id_libraries: set(),
         field_id_files: {},
     }
@@ -60,7 +60,6 @@ class FileCache:
             # design
             with open(self.cache_path, 'rb') as pickeFile:
                 self.cache = pickle.load(pickeFile)
-            self.cache_copy = deepcopy(self.cache)
             log.debug(self.__str__())
         except:
             log.warning('The cache file was corrupted, re-initialising...')
@@ -80,8 +79,7 @@ class FileCache:
         """
         log.debug('Clearing cache...')
         # The cache file doesn't exist, so we will create a new one
-        self.cache = deepcopy(self.black_cache_structure)
-        self.cache_copy = deepcopy(self.black_cache_structure)
+        self.cache = deepcopy(self.blank_cache_structure)
         self.save_cache()
 
     def save_cache(self):
@@ -101,14 +99,20 @@ class FileCache:
         the file does not exist.
         """
         path = file_object.path
-        try:
-            if (
-                self.cache[self.field_id_files][path] ==
-                self.cache_copy[self.field_id_files][path]
-            ):
-                return False
-        except KeyError:
+        if not os.path.exists(path):
+            log.error('File does not exist: {0}'.format(path))
+            return False
+
+        cached_md5 = self.cache[self.field_id_files].get(path, None)
+        with open(path, 'rb') as f:
+            md5 = hashlib.md5(f.read()).hexdigest()
+        if cached_md5 == md5:
+            # File is not changed
+            return False
+        else:
+            # File was changed
             return True
+        # File is not in cache
         return True
 
     def library_in_cache(self, libname):
