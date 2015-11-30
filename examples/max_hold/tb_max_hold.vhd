@@ -31,7 +31,7 @@ library std;
 
 entity tb_max_hold is
     generic (
-        data_width : positive := 32
+        data_width : positive := 12
     );
 end entity;
 
@@ -40,7 +40,7 @@ architecture beh of tb_max_hold is
         := (others => '0');
     signal uut_output   : std_logic_vector(data_width-1 downto 0);
     signal clock        : std_logic := '0';
-    signal reset        : std_logic := '1';
+    signal reset        : std_logic := '0';
 begin
     -- Test source clock
     clockgen : process(clock)
@@ -61,9 +61,9 @@ begin
         variable opcode         : std_logic_vector(7 downto 0);
         variable data           : std_logic_vector(data_width-1 downto 0);
         variable read_ok        : boolean;
+        variable first_call     : boolean := true;
     begin
         if status /= open_ok then
-            reset <= '1';
             file_open(status, input_file, input_path, read_mode);
             assert (status = open_ok) 
                 report "Failed to open " & input_path
@@ -72,37 +72,41 @@ begin
             assert (status = open_ok) 
                 report "Failed to open " & output_path
                 severity failure;
+        end if;
+
+        reset <= '0';
+
+        if not endfile(input_file) then
+            readline(input_file, data_line);
+            -- Get OpCode
+            read(data_line, opcode, read_ok);
+            if opcode = opcode_reset then
+                reset <= '1';
+            elsif opcode = opcode_write then
+                -- Get Data
+                read(data_line, data, read_ok);
+                uut_data <= data;
+            else
+                report(
+                    "Invalid opcode: " & integer'image(
+                        to_integer(unsigned(opcode)))
+                    ) severity error;
+            end if; 
+            wait until rising_edge(clock);
+            if first_call then
+                first_call := false;
+            else
+                -- Record current maximum
+                write(output_line, uut_output);
+                writeline(output_file, output_line);
+            end if;
         else
             wait until rising_edge(clock);
-            reset <= '0';
-            if opcode = opcode_reset then
-                -- Reset set this cycle, record output now
-                write(output_line, uut_output);
-                writeline(output_file, output_line);
-            end if;
-            if not endfile(input_file) then
-                readline(input_file, data_line);
-                -- Get OpCode
-                read(data_line, opcode, read_ok);
-                if opcode = opcode_reset then
-                    reset <= '1';
-                elsif opcode = opcode_write then
-                    -- Get Data
-                    read(data_line, data, read_ok);
-                    uut_data <= data;
-                else
-                    report(
-                        "Invalid opcode: " & integer'image(
-                            to_integer(unsigned(opcode)))
-                        ) severity error;
-                end if;  
-            else
-                wait until rising_edge(clock);
-                -- Write result and close
-                write(output_line, uut_output);
-                writeline(output_file, output_line);
-                finish(0);
-            end if;
+            -- Record current maximum
+            write(output_line, uut_output);
+            writeline(output_file, output_line);
+            -- Simulation Finished
+            finish(0); 
         end if;
     end process;
     -- UUT instance

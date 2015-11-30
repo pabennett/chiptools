@@ -6,6 +6,7 @@
     <config part='xc6slx9-csg324-2'/>
 
     <unittest path='max_hold_tests.py'/>
+    <unittest path='basic_unit_test.py'/>
     <constraints path='max_hold.ucf'/>
     <generic data_width='3'/>
 

@@ -24,7 +24,7 @@ architecture rtl of max_hold is
     signal max_data : unsigned(data_width-1 downto 0) := (others => '0');
 begin
 
-    hold_max : procesS(clock) is
+    hold_max : process(clock) is
     begin
         if rising_edge(clock) then
             if reset = '1' then

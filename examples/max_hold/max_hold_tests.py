@@ -23,6 +23,11 @@ try:
     import matplotlib.pyplot as plt
 except ImportError:
     plt = None
+try:
+    import seaborn
+except ImportError:
+    # We dont care if seaborn isn't installed - it just makes plots prettier.
+    pass
 
 # Import the ChipTools base test class, our test classes should be derived from
 # the ChipToolsTest class (which is derived from unittest.TestCase)
@@ -90,10 +95,9 @@ class MaxHoldsTestBase(ChipToolsTest):
         to test the reset functionality of the component too.
         """
         with open(path, 'w') as f:
-            for seqId, sequence in enumerate(values):
-                if seqId > 0:
-                    # Reset the component at the beginning of a new sequence.
-                    f.write('{0}\n'.format(bin(reset_opcode)[2:].zfill(8)))
+            for sequence in values:
+                # Reset the component at the beginning of a new sequence.
+                f.write('{0}\n'.format(bin(reset_opcode)[2:].zfill(8)))
                 # Write each value in the sequence to the stimulus file
                 for value in sequence:
                     f.write(
@@ -106,88 +110,97 @@ class MaxHoldsTestBase(ChipToolsTest):
     def read_output(self, path):
         output_values = []
         with open(path, 'r') as f:
-                data = f.readlines()
+            data = f.readlines()
         for valueIdx, value in enumerate(data):
             # testbench response
             output_values.append(int(value, 2))  # Binary to integer
         return output_values
 
-    def check_output(self, path, expected_values):
+    def sequence_max(self, sequence):
+        tracking_max = []
+        for subsequence in sequence:
+            seq_max = 0
+            for value in subsequence:
+                seq_max = max(value, seq_max)
+                tracking_max.append(seq_max)
+        return tracking_max
+
+    def check_output(self, path, input_values):
         """
         Read the reported maximum values from the response file and compare
         them with what the Python model expects given the same input. We use
         Python unittest assertion methods here to check our expectations and
         flag any failures.
         """
+        # Replace empty subsequences in value sequence with a zero, prefix
+        # all subsequences with a zero value to represent the reset state.
+        input_values = [
+            [0] + seq if len(seq) > 0 else [0] for seq in input_values
+        ]
+        # Get the actual values from the testbench output file
         actual = self.read_output(path)
+        # Get the expected maximum values from the value sequence
+        expected = self.sequence_max(input_values)
+        log.info("Got {0} actual values".format(len(actual)))
+        log.info("Got {0} expected values".format(len(expected)))
+        log.info("Plotting data...")
         # Save the actual and expected values as a plot for reference
         if plt is not None:
-            self.save_figure(actual, expected_values, self.values)
+            self.save_figure(actual, expected, input_values)
         # Compare our actual values with our expected values
-        for valueIdx, actual_value in enumerate(actual):
-            # our expectation
-            expected = expected_values[valueIdx]
-            expected_value = max(expected if len(expected) > 0 else [0])
-            # Use assertion to check expectation
-            self.assertEquals(actual_value, expected_value)
+        log.info("Comparing data values...")
+        self.assertEqual(len(actual), len(expected))
+        for valIdx, val in enumerate(actual):
+            # Per element comparison checking, you could use assertListEqual
+            # but it can be slow for large lists
+            # (https://bugs.python.org/issue19217)
+            self.assertEqual(val, expected[valIdx])
+        log.info("...done")
 
-    def save_figure(self, actual, expected, input_values):
+    def save_figure(self, actual, expected, input_values, fontsize=10):
         """
         Save a plot of the actual and expected values recorded during the test.
         Figures are a useful reference to see why a test might be failing.
         """
-        expected = [0 if len(v) == 0 else max(v) for v in expected]
         name = self.__class__.__name__
-        fontsize = 10
         fig = plt.figure(0, figsize=(10, 7.5))
-        plt.subplot(2, 1, 1)
+        # Plot the actual maximum and expected maximum values together
         plt.title(
             'Actual and Expected Results for \'{0}\''.format(name),
             fontsize=fontsize
         )
-        plt.xlabel('Result Index', fontsize=fontsize)
-        plt.ylabel('Value', fontsize=fontsize)
-        plt.plot(
-            list(range(len(expected))),
-            expected,
-            'rx',
-            label='Expected values'
-        )
-        plt.plot(
-            list(range(len(actual))),
-            actual,
-            'b:',
-            label='Actual values'
-        )
-        plt.legend(loc='upper right', shadow=True)
-        plt.subplot(2, 1, 2)
-        plt.title('Input Values for \'{0}\''.format(name), fontsize=fontsize)
         plt.xlabel('Value Index', fontsize=fontsize)
         plt.ylabel('Value', fontsize=fontsize)
-        input_values = [v for sl in input_values for v in sl]
+        yvals = [v for sl in input_values for v in sl]
         plt.plot(
-            list(range(len(input_values))),
-            input_values,
-            )
-        plt.tight_layout()
-        plt.savefig(
-            os.path.join(
-                self.simulation_root, name + '.png'
-            )
+            range(len(actual)),
+            actual,
+            'r:',
+            label='Actual values',
+            alpha=0.8
         )
+        plt.plot(
+            range(len(yvals)),
+            expected,
+            'g--',
+            label='Expected values',
+            alpha=0.8
+        )
+        plt.plot(range(len(yvals)), yvals, 'b-', label='Input', alpha=0.5)
+        plt.legend(loc='best', shadow=True)
+        plt.tight_layout()
+        plt.savefig(os.path.join(self.simulation_root, name + '.png'))
         plt.close(fig)
 
 ###############################################################################
-# Set up a test to generate 20 32bit random sequences of random length
-# At the end of each sequence the component is reset and the maximum value
-# is written to a file.
+# Set up a test to generate 10 32bit random sequences of random length
 ###############################################################################
 
 
 class max_hold_random_tests_32bit(MaxHoldsTestBase):
     data_width = 32
-    # 20 sequences of random length (between 0 and 1000 integers)
-    sequence_lengths = [random.randint(0, 1000) for i in range(20)]
+    # 10 sequences of random length (between 0 and 400 integers)
+    sequence_lengths = [random.randint(0, 400) for i in range(10)]
     # Generator function for sequence values
     generator = lambda self, data_width, lengths: [
         [random.randint(0, 2**data_width-1) for i in range(l)] for l in lengths
@@ -251,41 +264,50 @@ class max_hold_constant_data_0(max_hold_random_tests_32bit):
 
 
 class max_hold_ramp_up_test(max_hold_random_tests_32bit):
-    sequence_lengths = [random.randint(0, 1000) for i in range(20)]
     generator = lambda self, data_width, lengths: [
         [i for i in range(l)] for l in lengths
     ]
 
 
 class max_hold_ramp_down_test(max_hold_random_tests_32bit):
-    sequence_lengths = [random.randint(0, 1000) for i in range(20)]
     generator = lambda self, data_width, lengths: [
         [l-i for i in range(l)] for l in lengths
     ]
 
 
 class max_hold_impulse_test(max_hold_random_tests_32bit):
-    sequence_lengths = [random.randint(0, 1000) for i in range(20)]
     generator = lambda self, data_width, lengths: [
         [[0, l][i == 0] for i in range(l)] for l in lengths
     ]
 
 
 class max_hold_sinusoid_test(max_hold_random_tests_32bit):
-    sequence_lengths = [random.randint(0, 1000) for i in range(20)]
     data_width = 12
     generator = lambda self, data_width, lengths: [
         [
-            int((2**10-1) * (math.sin(2*math.pi*(i/l)) + 1)) for i in range(l)
+            int(
+                i/l * (2**10-1) * (math.sin(8*math.pi*(i/l)) + 1)
+            ) for i in range(l)
         ] for l in lengths
     ]
 
 
 class max_hold_square_test(max_hold_random_tests_32bit):
-    sequence_lengths = [random.randint(0, 1000) for i in range(20)]
     data_width = 8
     generator = lambda self, data_width, lengths: [
         [
             int((2**8-1) * (i % 2)) for i in range(l)
         ] for l in lengths
     ]
+
+###############################################################################
+# Single sequence tests
+###############################################################################
+
+
+class max_hold_sinusoid_single_sequence(max_hold_sinusoid_test):
+    sequence_lengths = [200]
+
+
+class max_hold_random_single_sequence(max_hold_random_tests_32bit):
+    sequence_lengths = [200]
