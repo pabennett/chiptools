@@ -15,6 +15,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(testroot, os.path.pardir)))
 
 from chiptools.core.project import Project
 from chiptools.parsers.xml_project import XmlProjectParser
+from chiptools.core.cli import CommandLine
 
 # Blackhole log messages from chiptools
 logging.config.dictConfig({'version': 1})
@@ -338,6 +339,48 @@ class TestManualProjectInterface(TestProjectInterface):
         self.assertTrue(
             callable(project.get_reporter())
         )
+
+
+class TestUninitialisedProjectCLI(TestProjectInterface):
+    """
+    These tests check that the CommandLine handles all user command errors
+    gracefully when there is no project loaded.
+    """
+    def test_compile(self):
+        cli = CommandLine()
+        cli.do_compile('')
+
+    def test_synthesise(self):
+        cli = CommandLine()
+        cli.do_synthesise('')
+
+    def test_show_config(self):
+        cli = CommandLine()
+        cli.do_show_config('')
+
+    def test_add_tests(self):
+        cli = CommandLine()
+        cli.do_add_tests('')
+
+    def test_remove_tests(self):
+        cli = CommandLine()
+        cli.do_remove_tests('')
+
+    def test_run_tests(self):
+        cli = CommandLine()
+        cli.do_run_tests('')
+
+    def test_clean(self):
+        cli = CommandLine()
+        cli.do_clean('')
+
+    def test_run_preprocessors(self):
+        cli = CommandLine()
+        cli.do_run_preprocessors('')
+
+    def test_show_synthesis_fileset(self):
+        cli = CommandLine()
+        cli.do_show_synthesis_fileset('')
 
 
 class TestMissingReporter(TestProjectInterface):
