@@ -22,7 +22,11 @@ def wraps_do_commands(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         log.debug('USER COMMAND: (' + fn.__name__ + ') ' + args[1])
-        return fn(*args, **kwargs)
+        try:
+            return fn(*args, **kwargs)
+        except:
+            log.error('Command failed due to error:')
+            log.error(traceback.format_exc())
     return wrapper
 
 SEP = ' ' * 4
@@ -102,13 +106,15 @@ class CommandLine(cmd.Cmd):
     @wraps_do_commands
     def do_load_project(self, path):
         """Load the given project XML file: load_project <path_to_project>"""
-        log.info('Loading {0} in current working directory: {1}'.format(
-            path,
-            os.getcwd()
-        ))
         path = os.path.abspath(path)
         if os.path.exists(path) and os.path.isfile(path):
             try:
+                log.info(
+                    'Loading {0} in current working directory: {1}'.format(
+                        path,
+                        os.getcwd()
+                    )
+                )
                 XmlProjectParser.load_project(path, self.project)
             except:
                 log.error('The project could not be loaded due to an error:')
@@ -127,7 +133,11 @@ class CommandLine(cmd.Cmd):
     @wraps_do_commands
     def do_show_synthesis_fileset(self, command):
         """Print out the synthesis file set"""
-        for libName, fileList in self.project.get_synthesis_fileset().items():
+        items = self.project.get_synthesis_fileset().items()
+        if len(items) == 0:
+            log.info('There are no synthesisable files loaded.')
+            return
+        for libName, fileList in items:
             log.info('Library: ' + libName)
             for file in fileList:
                 log.info('\t\t' + file.path)
@@ -143,6 +153,7 @@ class CommandLine(cmd.Cmd):
                 "Please specify a library and entity.\n" +
                 "Example: (Cmd) synthesise my_library.my_entity"
             )
+            return
         self.project.synthesise(library, entity)
 
     @wraps_do_commands
@@ -151,7 +162,9 @@ class CommandLine(cmd.Cmd):
         preprocessors. You can use this command to test that a preprocessor is
         running on your file correctly. Preprocessors are called automatically
         when you run synthesis"""
+        log.info('Running preprocessors...')
         self.project.run_preprocessors()
+        log.info('...done')
 
     @wraps_do_commands
     def do_simulate(self, command):
@@ -166,11 +179,7 @@ class CommandLine(cmd.Cmd):
                 "Please specify a library and entity.\n" +
                 "Example: (Cmd) simulate my_library.my_entity"
             )
-            return False
-        except:
-            log.error(traceback.format_exc())
-            return False
-
+            return
         self.project.simulate(library, entity, gui=True)
 
     @wraps_do_commands
@@ -178,6 +187,9 @@ class CommandLine(cmd.Cmd):
         """Clear the file cache"""
         # Delete libraries from the simulation area
         simpath = self.project.get_simulation_directory()
+        if simpath is None:
+            log.error('No simulation path is set, aborting operation.')
+            return
         log.info('Cleaning simulation folder: ' + simpath)
         for libname in self.project.cache.get_libraries():
             path = os.path.join(simpath, libname)
@@ -283,6 +295,10 @@ class CommandLine(cmd.Cmd):
         """
         tests = self.project.get_tests()
 
+        if len(tests) == 0:
+            log.info('There are no tests available.')
+            return
+
         testUniqueId = 0
         for file_object in tests:
             file_name = os.path.basename(file_object.path)
@@ -357,7 +373,11 @@ class CommandLine(cmd.Cmd):
         command or remove tests that have been added to the suite by issuing
         the remove_tests command.
         """
-        ids = utils.parseRange(command)
+        try:
+            ids = utils.parseRange(command)
+        except ValueError:
+            log.error('Invalid test range specified: ' + command)
+            return
         for testId in ids:
             self.test_set.add(testId)
         self.show_test_selection()
@@ -375,7 +395,11 @@ class CommandLine(cmd.Cmd):
         You can check which tests are available by issuing the show_tests
         command or add tests by issuing the add_tests command.
         """
-        ids = utils.parseRange(command)
+        try:
+            ids = utils.parseRange(command)
+        except ValueError:
+            log.error('Invalid test range specified: ' + command)
+            return
         for testId in ids:
             try:
                 self.test_set.remove(testId)
