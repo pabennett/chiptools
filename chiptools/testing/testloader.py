@@ -71,13 +71,6 @@ class ChipToolsTest(unittest.TestCase):
         self.simulationSetUp()
 
         # Simulate the testbench
-        # TODO: Not all simulators may support this TCL format, move this to
-        # the tool-specific wrappers.
-        if self.duration <= 0:
-            duration = '-all'
-        else:
-            duration = utils.seconds_to_timestring(self.duration)
-
         if len(self.generics.keys()) == 0:
             log.warning(
                 'No generics are supplied by this test case, if the ' +
@@ -101,10 +94,7 @@ class ChipToolsTest(unittest.TestCase):
             library=self.library,
             entity=self.entity,
             includes=self.simulation_libraries,
-            do=(
-                'set NumericStdNoWarnings 1\n' + 'run ' +
-                duration + ';quit'
-            ),
+            duration=self.duration,
             generics=self.generics,
             gui=False
         )

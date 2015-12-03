@@ -4,6 +4,7 @@ import shlex
 
 from chiptools.wrappers.simulator import Simulator
 from chiptools.common.filetypes import FileType
+from chiptools.common import utils
 
 log = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ class Modelsim(Simulator):
         generics={},
         includes={},
         args=[],
-        do=''
+        duration=None
     ):
         """
         Invoke the simulator and target the given *entity* in the given
@@ -66,7 +67,12 @@ class Modelsim(Simulator):
         # Enable or disable the GUI
         arguments += [['-c'], ['-i']][gui]
         # Apply any DO commands
-        if do:
+        if duration is not None:
+            if duration <= 0:
+                duration = '-all'
+            else:
+                duration = utils.seconds_to_timestring(self.duration)
+            do = 'set NumericStdNoWarnings 1\n' + 'run ' + duration + ';quit'
             arguments += ['-do', '{0}'.format(do)]
         # Finish processing arguments and invoke vsim
         # arguments += ['-L ' + library for library in includes.keys()]

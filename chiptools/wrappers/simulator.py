@@ -72,6 +72,13 @@ class Simulator(ToolchainBase):
         """
         raise NotImplementedError
 
+    def library_exists(self, libname, workdir):
+        """
+        Return True if the given libname exists in the workdir.
+        """
+        lib_path = os.path.join(workdir, libname)
+        return os.path.isdir(lib_path)
+
     def compile_project(self):
 
         # Load the cache
@@ -91,7 +98,6 @@ class Simulator(ToolchainBase):
             try:
                 for file_object in self.project.get_files():
                     libname = file_object.library
-                    lib_path = os.path.join(cwd, libname)
                     count += 1
                     # Check the md5sum of this file and compare it to the
                     # md5sum cache to see if it has changed since it was
@@ -103,7 +109,7 @@ class Simulator(ToolchainBase):
                         ):
                             # The hashes match. If the library already exists
                             # then dont compile the file.
-                            if os.path.isdir(lib_path):
+                            if self.library_exists(libname, cwd):
                                 if libname not in created_libraries:
                                     skipped += 1
                                     log.info(
@@ -115,7 +121,7 @@ class Simulator(ToolchainBase):
                         # were already created
                         if (
                             not cache.library_in_cache(libname) or
-                            not os.path.isdir(lib_path)
+                            not self.library_exists(libname, cwd)
                         ):
                             # If this library is in the cache file someone must
                             # have deleted it since the last run, we need to
