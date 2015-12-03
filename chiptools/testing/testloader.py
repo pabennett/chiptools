@@ -88,6 +88,15 @@ class ChipToolsTest(unittest.TestCase):
             tool_type='simulation'
         )
 
+        if simulator is None or not simulator.installed:
+            name = None if simulator is None else simulator.name
+            self.skip(
+                "Test aborted, {0} is not available.".format(
+                    name
+                )
+            )
+            return
+
         ret_val, stdout, stderr = simulator.simulate(
             library=self.library,
             entity=self.entity,

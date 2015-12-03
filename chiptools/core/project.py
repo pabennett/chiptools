@@ -315,8 +315,13 @@ class Project:
         : 'simulator' tool name will be used instead.
         """
         simulation_tool = self.tool_wrapper.get_tool(tool_type='simulation')
-        if simulation_tool is None:
-            log.error("Compilation aborted, no simulation tool available.")
+        if simulation_tool is None or not simulation_tool.installed:
+            name = None if simulation_tool is None else simulation_tool.name
+            log.error(
+                "Compilation aborted, {0} is not available.".format(
+                    name
+                )
+            )
             return
         try:
             simulation_tool.compile_project()
@@ -336,8 +341,13 @@ class Project:
             tool_type='simulation',
             tool_name=tool_name
         )
-        if simulation_tool is None:
-            log.error("Compilation aborted, no simulation tool available.")
+        if simulation_tool is None or not simulation_tool.installed:
+            name = None if simulation_tool is None else simulation_tool.name
+            log.error(
+                "Compilation aborted, {0} is not available.".format(
+                    name
+                )
+            )
             return
         # Do a compilation of the design to ensure the libraries are up to date
         try:
@@ -373,7 +383,13 @@ class Project:
                 tool_type='synthesis',
                 tool_name=tool_name
             )
-            if synthesis_tool is None:
+            if synthesis_tool is None or not synthesis_tool.installed:
+                name = None if synthesis_tool is None else synthesis_tool.name
+                log.error(
+                    "Synthesis aborted, {0} is not available.".format(
+                        name
+                    )
+                )
                 return
             log.info(
                 'Synthesising entity ' + entity + ' in library ' + library
@@ -412,8 +428,13 @@ class Project:
             tool_type='simulation',
             tool_name=tool_name
         )
-        if simulation_tool is None:
-            log.error("Compilation aborted, no simulation tool available.")
+        if simulation_tool is None or not simulation_tool.installed:
+            name = None if simulation_tool is None else simulation_tool.name
+            log.error(
+                "Compilation aborted, {0} is not available.".format(
+                    name
+                )
+            )
             return
         # First compile the project
         try:
