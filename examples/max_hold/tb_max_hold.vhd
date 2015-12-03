@@ -17,7 +17,6 @@
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
-    use ieee.std_logic_textio.all;
     use ieee.math_real.all;
 
 library std;
@@ -25,9 +24,6 @@ library std;
 
 library lib_max_hold;
     use lib_max_hold.pkg_max_hold.all;
-
-library std;
-    use std.env.all;
 
 entity tb_max_hold is
     generic (
@@ -41,25 +37,28 @@ architecture beh of tb_max_hold is
     signal uut_output   : std_logic_vector(data_width-1 downto 0);
     signal clock        : std_logic := '0';
     signal reset        : std_logic := '0';
+    signal done         : boolean := false;
 begin
     -- Test source clock
     clockgen : process(clock)
     begin
-        clock <= not clock after 10 ns;
+        if not done then
+            clock <= not clock after 10 ns;
+        end if;
     end process;
     -- Simple process to read and write the stimulus files.
     stim_parser : process
         constant input_path     : string := "input.txt";
         constant output_path    : string := "output.txt";
-        constant opcode_reset   : std_logic_vector(7 downto 0) := x"00";
-        constant opcode_write   : std_logic_vector(7 downto 0) := x"01";
+        constant opcode_reset   : bit_vector(7 downto 0) := x"00";
+        constant opcode_write   : bit_vector(7 downto 0) := x"01";
         file     input_file     : text;
         file     output_file    : text;
         variable data_line      : line;
         variable output_line    : line;
         variable status         : file_open_status := status_error;
-        variable opcode         : std_logic_vector(7 downto 0);
-        variable data           : std_logic_vector(data_width-1 downto 0);
+        variable opcode         : bit_vector(7 downto 0);
+        variable data           : bit_vector(data_width-1 downto 0);
         variable read_ok        : boolean;
         variable first_call     : boolean := true;
     begin
@@ -85,11 +84,11 @@ begin
             elsif opcode = opcode_write then
                 -- Get Data
                 read(data_line, data, read_ok);
-                uut_data <= data;
+                uut_data <= to_stdlogicvector(data);
             else
                 report(
                     "Invalid opcode: " & integer'image(
-                        to_integer(unsigned(opcode)))
+                        to_integer(unsigned(to_stdlogicvector(opcode))))
                     ) severity error;
             end if; 
             wait until rising_edge(clock);
@@ -97,16 +96,17 @@ begin
                 first_call := false;
             else
                 -- Record current maximum
-                write(output_line, uut_output);
+                write(output_line, to_bitvector(uut_output));
                 writeline(output_file, output_line);
             end if;
         else
             wait until rising_edge(clock);
             -- Record current maximum
-            write(output_line, uut_output);
+            write(output_line, to_bitvector(uut_output));
             writeline(output_file, output_line);
             -- Simulation Finished
-            finish(0); 
+            done <= true;
+            wait;
         end if;
     end process;
     -- UUT instance
