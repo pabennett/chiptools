@@ -4,44 +4,16 @@ import os
 import importlib.machinery
 import inspect
 
-# TODO: Replace with dynamic plugin discovery and loading
-from chiptools.wrappers.synthesisers.quartus import Quartus
-from chiptools.wrappers.synthesisers.ise import Ise
-from chiptools.wrappers.simulators.modelsim import Modelsim
-
 from chiptools.wrappers.simulator import Simulator
 from chiptools.wrappers.synthesiser import Synthesiser
 from chiptools.wrappers.toolchains import ToolchainBase
 
 log = logging.getLogger(__name__)
 
-# A registry of synthesis tool names and functions to return an appropriate
-# synthesis tool wrapper.
-"""
-synthesis_tool_class_registry = {
-    'ise': lambda project, user_paths: Ise(
-        project,
-        user_paths,
-        mode='manual'
-    ),
-    'quartus': lambda project, user_paths: Quartus(
-        project,
-        user_paths
-    ),
-    'xflow': lambda project, user_paths: Ise(
-        project,
-        user_paths,
-        mode='xflow'
-    ),
-}
 
-simulation_tool_class_registry = {
-    'modelsim': lambda project, user_paths: Modelsim(project, user_paths),
-}
-"""
 def plugin_discovery(
-    plugin_directory, 
-    plugin_subclass, 
+    plugin_directory,
+    plugin_subclass,
     class_filter=['Simulator', 'Synthesiser']
 ):
     result = {}
@@ -55,7 +27,8 @@ def plugin_discovery(
                 module = loader.load_module()
             except:
                 log.error(
-                    'Plugin module {0} contains errors and will be disabled:'.format(
+                    'Plugin module ' +
+                    '{0} contains errors and will be disabled:'.format(
                         os.path.basename(path)
                     )
                 )
@@ -64,7 +37,7 @@ def plugin_discovery(
             for name, obj in inspect.getmembers(module):
                 if inspect.isclass(obj):
                     if (
-                        issubclass(obj, ToolchainBase) and 
+                        issubclass(obj, ToolchainBase) and
                         obj.__name__ not in class_filter
                     ):
                         if issubclass(obj, plugin_subclass):
@@ -76,11 +49,13 @@ def plugin_discovery(
 synthesis_tool_class_registry = plugin_discovery(
     os.path.join(os.path.dirname(__file__), 'synthesisers'),
     Synthesiser,
-) 
+)
 simulation_tool_class_registry = plugin_discovery(
     os.path.join(os.path.dirname(__file__), 'simulators'),
     Simulator,
 )
+
+
 def get_all_tools(project, user_paths, tool_type='synthesis'):
     """Return all tools of the given type, this could be used for reporting
     available tools."""
