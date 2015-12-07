@@ -37,8 +37,7 @@ class Ghdl(Simulator):
         Ghdl._call(
             self.ghdl, args, cwd=self.project.get_simulation_directory()
         )
-
-        # Run
+        # Run command
         args = [
             '-r',
             '--work=' + library,
@@ -51,7 +50,7 @@ class Ghdl(Simulator):
                 args += [
                     '--stop-time=' + utils.seconds_to_timestring(self.duration)
                 ]
-
+        # Run the simulation
         args += [entity]
         ret, stdout, stderr = Ghdl._call(
             self.ghdl,
@@ -59,11 +58,6 @@ class Ghdl(Simulator):
             cwd=self.project.get_simulation_directory(),
             quiet=False
         )
-
-        # Add any custom arguments from the project file
-        arguments = self.project.get_tool_arguments(self.name, 'simulate')
-        arguments = shlex.split(['', arguments][arguments is not None])
-        arguments += args
 
         return ret, stdout, stderr
 
