@@ -22,6 +22,7 @@ class Simulator(ToolchainBase):
             executables,
             user_paths
         )
+        self.libraries = {}
 
     def compile(self, file_object):
         """
@@ -79,11 +80,10 @@ class Simulator(ToolchainBase):
         lib_path = os.path.join(workdir, libname)
         return os.path.isdir(lib_path)
 
-    def compile_project(self):
-
+    def compile_project(self, includes={}):
+        self.libraries.update(includes)
         # Load the cache
         cache = self.project.cache
-
         # Compile the project
         try:
             cwd = self.project.get_simulation_directory()
