@@ -2,6 +2,7 @@ import subprocess
 import os
 import logging
 import threading
+import time
 
 if __name__ == '__main__':
     import exceptions
@@ -9,6 +10,10 @@ else:
     from chiptools.common import exceptions
 
 log = logging.getLogger(__name__)
+
+
+def getDateString():
+    return time.strftime('%d%m%y_%H%M%S')
 
 
 def parseRange(astr):
