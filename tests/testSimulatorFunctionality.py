@@ -16,11 +16,12 @@ logging.config.dictConfig({'version': 1})
 class TestSimulatorInterface(unittest.TestCase):
 
     project_path = None
+    simulator_name = ''
 
     def preTestCheck(self):
         """
-        Check that the required dependencies are available before running the 
-        tests. If the user does not have the required simulator installed we 
+        Check that the required dependencies are available before running the
+        tests. If the user does not have the required simulator installed we
         cannot run these unit tests.
         """
         simulator = self.cli.project.get_available_simulators().get(
@@ -28,7 +29,9 @@ class TestSimulatorInterface(unittest.TestCase):
             None
         )
         if simulator is None or not simulator.installed:
-            raise unittest.SkipTest('Cannot run this test as no simulator is available.')
+            raise unittest.SkipTest(
+                'Cannot run this test as no simulator is available.'
+            )
 
     def checkCompile(self):
         self.clearCache()
@@ -40,6 +43,12 @@ class TestSimulatorInterface(unittest.TestCase):
         self.assertTrue(os.path.exists(self.project_path))
         self.cli = cli.CommandLine()
         self.cli.do_load_project(self.project_path)
+        # Override the project simulator config
+        self.cli.project.add_config(
+            'simulator',
+            self.simulator_name,
+            force=True
+        )
 
     def clearCache(self):
         self.cli.do_clean('')
@@ -102,8 +111,9 @@ class TestSimulatorInterface(unittest.TestCase):
             self.assertEqual(failures, 0)
 
 
-class TestExampleProjectsMaxHold(TestSimulatorInterface):
+class TestExampleProjectsMaxHoldModelsim(TestSimulatorInterface):
 
+    simulator_name = 'modelsim'
     root = os.path.join('examples', 'max_hold')
     project_path = os.path.join(root, 'max_hold.xml')
 
@@ -114,6 +124,14 @@ class TestExampleProjectsMaxHold(TestSimulatorInterface):
     def test_unit_test_framework(self):
         self.preTestCheck()
         self.checkUnitTestFramework()
+
+
+class TestExampleProjectsMaxHoldIsim(TestExampleProjectsMaxHoldModelsim):
+    simulator_name = 'isim'
+
+
+class TestExampleProjectsMaxHoldGhdl(TestExampleProjectsMaxHoldModelsim):
+    simulator_name = 'ghdl'
 
 if __name__ == '__main__':
     unittest.main()

@@ -101,11 +101,11 @@ class Project:
             unit.testsuite = unpacked_testsuite
         self.tests.append(unit)
 
-    def add_config(self, name, value):
+    def add_config(self, name, value, force=False):
         """
         Add a configuration key, value mapping for the project.
         """
-        if self.config.get(name, None) is not None:
+        if self.config.get(name, None) is not None and not force:
             log.warning(
                 'Ignoring duplicate configuration attribute ' +
                 'found in project file, ' +
@@ -324,7 +324,9 @@ class Project:
             )
             return
         try:
-            simulation_tool.compile_project()
+            simulation_tool.compile_project(
+                includes=self.options.get_simulator_library_dependencies()
+            )
         except:
             log.error(traceback.format_exc())
             log.error("Compilation aborted due to previous error.")
@@ -351,7 +353,9 @@ class Project:
             return
         # Do a compilation of the design to ensure the libraries are up to date
         try:
-            simulation_tool.compile_project()
+            simulation_tool.compile_project(
+                includes=self.options.get_simulator_library_dependencies()
+            )
         except:
             log.error(traceback.format_exc())
             log.error("Compilation aborted due to previous error")
@@ -438,7 +442,9 @@ class Project:
             return
         # First compile the project
         try:
-            simulation_tool.compile_project()
+            simulation_tool.compile_project(
+                includes=self.options.get_simulator_library_dependencies()
+            )
         except:
             log.error(traceback.format_exc())
             log.error("Compilation aborted due to previous error")
