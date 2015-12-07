@@ -4,6 +4,7 @@ import shlex
 
 from chiptools.wrappers.simulator import Simulator
 from chiptools.common.filetypes import FileType
+from chiptools.common import utils
 
 log = logging.getLogger(__name__)
 
@@ -27,29 +28,15 @@ class Ghdl(Simulator):
         args=[],
         duration=None
     ):
-        """
-        Invoke the simulator and target the given *entity* in the given
-        *library*.
-        If the optional argument *gui* is set to False the simulator will
-        execute as a console application otherwise it will run as a GUI. This
-        function is blocking and will only continue when the simulator
-        terminates.
-        The optional argument *generics* provides a dictionary of *generic
-        name*/*generic value*key, value pairs that are passed to the simulator
-        as a command line argument. This allowsyou to set generics present on
-        the entity being simulated.
-        The optional argument *do* can be used to supply a string argument to
-        be interpreted by the simulator as a script to execute after loading.
-        """
-
-
         # Elaborate
         args = [
             '-e',
             '--work=' + library,
             entity,
         ]
-        Ghdl._call(self.ghdl, args, cwd=self.project.get_simulation_directory())
+        Ghdl._call(
+            self.ghdl, args, cwd=self.project.get_simulation_directory()
+        )
 
         # Run
         args = [
@@ -61,7 +48,9 @@ class Ghdl(Simulator):
             args += ['-g{0}={1}'.format(name, binding)]
         if duration is not None:
             if duration > 0:
-                args += ['--stop-time=' + utils.seconds_to_timestring(self.duration)]
+                args += [
+                    '--stop-time=' + utils.seconds_to_timestring(self.duration)
+                ]
 
         args += [entity]
         ret, stdout, stderr = Ghdl._call(
@@ -76,18 +65,9 @@ class Ghdl(Simulator):
         arguments = shlex.split(['', arguments][arguments is not None])
         arguments += args
 
-
-
-
         return ret, stdout, stderr
 
     def compile(self, file_object, cwd=None):
-        """
-        Compile the supplied *file_object* into the current working library.
-        """
-        # Before compiling this file, check to see if it has any additional
-        # arguments that need passing to modelsim. First check the global
-        # project config, and then check the local file config.
         args = self.project.get_tool_arguments(self.name, 'compile')
         if len(args) == 0:
             args = file_object.get_tool_arguments(self.name, 'compile')
