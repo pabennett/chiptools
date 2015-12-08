@@ -15,6 +15,8 @@ class FileType(Enum):
     UCF = 6  # Universal constraints format
     SDC = 7  # Synopsis design constraints
     Python = 8
+    VivadoIp = 9
+    VivadoXDC = 10
 
 # Mapping of file extensions to FileType objects
 fileExtensionsLookup = {
@@ -26,6 +28,9 @@ fileExtensionsLookup = {
     '.tcl': FileType.TCL,
     '.sdc': FileType.SDC,
     '.py': FileType.Python,
+    '.xci': FileType.VivadoIp,
+    '.xco': FileType.VivadoIp,
+    '.xdc': FileType.VivadoXDC,
 }
 
 
@@ -43,6 +48,7 @@ class ProjectAttributes:
     # XML attributes identify parameters that can be applied to XML nodes.
     XML_ATTRIBUTE_NAME = 'name'
     XML_ATTRIBUTE_PATH = 'path'
+    XML_ATTRIBUTE_FLOW = 'flow'
     XML_ATTRIBUTE_PREPROCESSOR = 'preprocessor'
     XML_ATTRIBUTE_SYNTHESIS = 'synthesise'
     # These XML attributes are required configuration attributes that control
@@ -164,6 +170,7 @@ class Constraints(object):
     def __init__(self, **kwargs):
         self.path = kwargs[ProjectAttributes.XML_ATTRIBUTE_PATH]
         self.fileType = FileType.TCL
+        self.flow = kwargs[ProjectAttributes.XML_ATTRIBUTE_FLOW]
         fileName, fileExtension = os.path.splitext(self.path)
         fileExtension = fileExtension.strip(' ')
         if fileExtension in fileExtensionsLookup.keys():
