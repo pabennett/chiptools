@@ -42,5 +42,5 @@ Synthesis Tools
 
 * Xilinx ISE (tested with 14.7)
 * Quartus (tested with 13.1)
-* Vivado (*in progress*)
+* Vivado (tested with 2015.4)
 * Lattice (*in progress*)
