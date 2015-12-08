@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 def getDateString():
-    return time.strftime('%d%m%y_%H%M%S')
+    return time.strftime('%d, %b %y at %H:%M:%S')
 
 
 def parseRange(astr):
