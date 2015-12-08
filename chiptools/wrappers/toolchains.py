@@ -73,7 +73,7 @@ class ToolchainBase:
         will be returned.
         """
         name, ext = os.path.splitext(executable)
-        if sys.platform == 'win32' and ext != 'exe':
+        if sys.platform == 'win32' and len(ext) == 0:
             executable += '.exe'
         files = list(
             filter(
