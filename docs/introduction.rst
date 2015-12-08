@@ -34,8 +34,8 @@ Simulation Tools
 ----------------
 
 * Modelsim (tested with 10.3)
-* ISIM (*in progress*)
-* GHDL (*in progress*)
+* ISIM (tested with 14.7)
+* GHDL (tested with 0.31)
 
 Synthesis Tools
 ---------------
