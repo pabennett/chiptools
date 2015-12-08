@@ -19,8 +19,12 @@ def plugin_discovery(
     result = {}
     for path in os.listdir(plugin_directory):
         if path.endswith('.py'):
+            # Use importlib to import any Python file discovered in the
+            # given plugin directory. Plugins that contain syntax errors or
+            # cause other exceptions when imported will be skipped.
             loader = importlib.machinery.SourceFileLoader(
-                'chiptools_wrappers_' + os.path.basename(path).split('.')[0],
+                'chiptools_wrappers_' + plugin_subclass.__name__ + '_' +
+                os.path.basename(path).split('.')[0],
                 os.path.join(plugin_directory, path),
             )
             try:
@@ -34,6 +38,9 @@ def plugin_discovery(
                 )
                 log.error(traceback.format_exc())
                 continue
+            # Search all members of the loaded module, add any member that
+            # which subclasses ToolchainBase and the given plugin_subclass to
+            # the result dictionary.
             for name, obj in inspect.getmembers(module):
                 if inspect.isclass(obj):
                     if (
@@ -41,9 +48,12 @@ def plugin_discovery(
                         obj.__name__ not in class_filter
                     ):
                         if issubclass(obj, plugin_subclass):
-                            result[
-                                obj.__name__.lower()
-                            ] = obj
+                            log.debug(
+                                'Added {0} to plugin library.'.format(
+                                    obj
+                                )
+                            )
+                            result[obj.__name__.lower()] = obj
     return result
 
 synthesis_tool_class_registry = plugin_discovery(
