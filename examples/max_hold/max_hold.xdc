@@ -1,0 +1,20 @@
+set_property PACKAGE_PIN C11 [get_ports {clock}]
+set_property PACKAGE_PIN A3 [get_ports {data[0]}]
+set_property PACKAGE_PIN A4 [get_ports {data[1]}]
+set_property PACKAGE_PIN A5 [get_ports {data[2]}]
+set_property PACKAGE_PIN A6 [get_ports {max[0]}]
+set_property PACKAGE_PIN A8 [get_ports {max[1]}]
+set_property PACKAGE_PIN A9 [get_ports {max[2]}]
+set_property PACKAGE_PIN A10 [get_ports {reset}]
+
+set_property IOSTANDARD LVCMOS33 [get_ports {clock}]
+set_property IOSTANDARD LVCMOS33 [get_ports {data[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {data[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {data[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {max[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {max[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {max[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {reset}]
+
+
+create_clock -name MAIN_CLOCK -period 10.000 [get_ports clock]
