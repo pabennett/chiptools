@@ -63,15 +63,39 @@ class Vivado(Simulator):
         duration=None
     ):
         cwd = self.project.get_simulation_directory()
-        # Execute XELAB on the design files:
-        xelab_args = [library + '.' + entity]
         # Set simulator generics
-        for name, binding in generics.items():
-            xelab_args += [
-                '-generic_top', '\"' + name + '=' + str(binding) + '\"'
-            ]
-        xelab_args += ['-s', entity]
-        Vivado._call(self.xelab, xelab_args, cwd=cwd, quiet=False)
+        # NOTE: Different behavior is required when calling xelab on Windows
+        # as the command line argument to xelab '-generic_top' does not work
+        # correctly. See: https://github.com/pabennett/chiptools/issues/1
+        if sys.platform == 'win32':
+            xelab_args = ''  # use a string sequence for Vivado on Windows
+            for name, binding in generics.items():
+                # TODO: The -generic_top argument formatting is hacked here for
+                # Vivado simulator on Windows. Xilinx may address this issue in
+                # the future, which will mean this code needs modifying again.
+                # The issue is present in Vivado 2015.4
+                xelab_args += (
+                    '-generic_top' + ' ' +
+                    name.upper() +
+                    '\"' + '=' + '\"' +
+                    str(binding)
+                )
+            # Execute XELAB on the design files:
+            xelab_args += (' ' + library + '.' + str(entity))
+            xelab_args += (' ' + '-s' + ' ' + str(entity))
+            Vivado._call_str_args(self.xelab, xelab_args, cwd=cwd, quiet=False)
+        else:
+            # Normal behavior on other platforms.
+            xelab_args = []
+            for name, binding in generics.items():
+                xelab_args += [
+                    '-generic_top',
+                    '\"' + name.upper() + '=' + str(binding) + '\"',
+                ]
+            # Execute XELAB on the design files:
+            xelab_args += [library + '.' + str(entity)]
+            xelab_args += ['-s' + ' ' + str(entity)]
+            Vivado._call(self.xelab, xelab_args, cwd=cwd, quiet=False)
         # Fuse generates a simulation executable, this can be called now with
         # the specified simulator arguments:
         sim_args = []

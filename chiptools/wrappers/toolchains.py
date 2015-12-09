@@ -133,3 +133,15 @@ class ToolchainBase:
         command += args
         ret, stdout, stderr = execute(command, path=cwd, quiet=quiet)
         return (ret, stdout, stderr)
+
+    @staticmethod
+    def _call_str_args(executable, args='', cwd=None, quiet=True):
+        log.debug('executing {0} in dir {1} with args {2}'.format(
+            executable,
+            cwd,
+            args
+        ))
+        command = executable
+        command += (' ' + args)
+        ret, stdout, stderr = execute(command, path=cwd, quiet=quiet)
+        return (ret, stdout, stderr)
