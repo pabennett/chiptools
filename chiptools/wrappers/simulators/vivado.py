@@ -69,6 +69,8 @@ class Vivado(Simulator):
         # correctly. See: https://github.com/pabennett/chiptools/issues/1
         if sys.platform == 'win32':
             xelab_args = ''  # use a string sequence for Vivado on Windows
+            if gui:
+                xelab_args += '-debug all'
             for name, binding in generics.items():
                 # TODO: The -generic_top argument formatting is hacked here for
                 # Vivado simulator on Windows. Xilinx may address this issue in
@@ -87,6 +89,8 @@ class Vivado(Simulator):
         else:
             # Normal behavior on other platforms.
             xelab_args = []
+            if gui:
+                xelab_args += ['-debug', 'all']
             for name, binding in generics.items():
                 xelab_args += [
                     '-generic_top',
