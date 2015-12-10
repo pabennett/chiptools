@@ -89,7 +89,6 @@ class Project:
             # for each file object that has a link to a test suite.
             unpacked_testsuite = testloader.load_tests(
                 path,
-                self.tool_wrapper,
                 self.get_simulation_directory(),
                 simulation_libraries=(
                     self.options.get_simulator_library_dependencies()
@@ -459,9 +458,9 @@ class Project:
                 for testId, test in enumerate(test_group):
                     # Patch in the simulation runtime data
                     test.postImport(
-                        self.tool_wrapper,
                         self.options.get_simulator_library_dependencies(),
-                        self.get_simulation_directory()
+                        self.get_simulation_directory(),
+                        simulation_tool,
                     )
                     # Add the test to the library
                     tests.append((file_name, test))

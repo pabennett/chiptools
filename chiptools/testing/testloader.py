@@ -45,14 +45,19 @@ class ChipToolsTest(unittest.TestCase):
     sim_stderr = ''
     sim_ret_val = 0
 
-    def postImport(self, tool_wrapper, simulation_libraries, simulation_path):
+    def postImport(
+        self,
+        simulation_libraries,
+        simulation_path,
+        simulation_tool
+    ):
         """
         Store project environment information so that it is available to
         testcases when they are run.
         """
-        self.tool_wrapper = tool_wrapper
         self.simulation_libraries = simulation_libraries
         self.simulation_root = simulation_path
+        self.simulator = simulation_tool
 
     def simulationSetUp(self):
         """The ChipTools test framework will call the simulationSetup method
@@ -77,12 +82,9 @@ class ChipToolsTest(unittest.TestCase):
                 'testbench uses generics' +
                 ' they will assume their default values.'
             )
-        simulator = self.tool_wrapper.get_tool(
-            tool_type='simulation'
-        )
 
-        if simulator is None or not simulator.installed:
-            name = None if simulator is None else simulator.name
+        if self.simulator is None or not self.simulator.installed:
+            name = None if self.simulator is None else self.simulator.name
             self.skip(
                 "Test aborted, {0} is not available.".format(
                     name
@@ -90,7 +92,7 @@ class ChipToolsTest(unittest.TestCase):
             )
             return
 
-        ret_val, stdout, stderr = simulator.simulate(
+        ret_val, stdout, stderr = self.simulator.simulate(
             library=self.library,
             entity=self.entity,
             includes=self.simulation_libraries,
@@ -109,7 +111,6 @@ class ChipToolsTest(unittest.TestCase):
 
 def load_tests(
     path,
-    tool_wrapper,
     simulation_path,
     simulation_libraries={}
 ):
