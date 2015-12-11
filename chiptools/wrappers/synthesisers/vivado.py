@@ -46,9 +46,10 @@ class Vivado(synthesiser.Synthesiser):
                 '%d%m%y_%H%M%S'
             )
             archive_name = synthesis_name + '.tar'
+            tcl_name = entity + '.tcl'
             synthesis_dir = os.path.join(working_directory, synthesis_name)
             os.makedirs(synthesis_dir)
-            self.project_path = os.path.join(synthesis_dir, entity + '.tcl')
+            self.project_path = os.path.join(synthesis_dir, tcl_name)
             if os.path.exists(self.project_path):
                 os.remove(self.project_path)
 
@@ -106,7 +107,7 @@ class Vivado(synthesiser.Synthesiser):
                     [
                         '-nojournal',
                         '-mode', 'tcl',
-                        '-source', self.project_path,
+                        '-source', tcl_name,
                     ],
                     cwd=synthesis_dir,
                     quiet=False,
