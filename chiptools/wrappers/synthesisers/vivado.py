@@ -5,7 +5,6 @@ import sys
 import traceback
 import tempfile
 
-from chiptools.common import exceptions
 from chiptools.common.filetypes import FileType
 from chiptools.wrappers import synthesiser
 
@@ -18,7 +17,7 @@ class Vivado(synthesiser.Synthesiser):
     if sys.platform == 'win32':
         vivado_name = 'vivado.bat'
     else:
-        vivado_name = ['vivado']
+        vivado_name = 'vivado'
     executables = [vivado_name]
 
     def __init__(self, project, user_paths):
