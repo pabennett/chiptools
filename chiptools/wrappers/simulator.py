@@ -55,16 +55,6 @@ class Simulator(ToolchainBase):
         """
         raise NotImplementedError
 
-    def set_library_path(self, library, path, cwd=None):
-        """
-        Create a library mapping for the given *library* name to the given
-        *path*.
-        This command is used to direct the Simulator to pre-compiled libraries
-        that may be referenced by your design files. For example it is typical
-        to reference unisim as a pre-compiled library.
-        """
-        raise NotImplementedError
-
     def add_library(self, library):
         """
         Create a new source file library for compiling design files into.
@@ -105,7 +95,7 @@ class Simulator(ToolchainBase):
                     if os.path.isfile(file_object.path):
                         if (
                             not force and
-                            not cache.is_file_changed(file_object)
+                            not cache.is_file_changed(file_object, self.name)
                         ):
                             # The hashes match. If the library already exists
                             # then dont compile the file.
@@ -116,11 +106,11 @@ class Simulator(ToolchainBase):
                                         "...skipping: " + file_object.path
                                     )
                                     continue
-                        cache.add_file(file_object)
+                        cache.add_file(file_object, self.name)
                         # Map or create the library, track which libraries
                         # were already created
                         if (
-                            not cache.library_in_cache(libname) or
+                            not cache.library_in_cache(libname, self.name) or
                             not self.library_exists(libname, cwd)
                         ):
                             # If this library is in the cache file someone must
@@ -130,7 +120,7 @@ class Simulator(ToolchainBase):
                             created_libraries.append(libname)
                             log.info("...adding library: " + libname)
                             self.add_library(libname)
-                            cache.add_library(libname.lower())
+                            cache.add_library(libname.lower(), self.name)
                         # Map the library to work so files can be added
                         self.set_working_library(libname, cwd=cwd)
                         log.info(
@@ -153,7 +143,7 @@ class Simulator(ToolchainBase):
                 # Clear the SHA1 for the file that failed so it will recompile
                 # next time
                 if file_object is not None:
-                    cache.remove_file(file_object)
+                    cache.remove_file(file_object, self.name)
                 cache.save_cache()
                 raise
             if skipped > 0:

@@ -32,7 +32,7 @@ class FileCache:
     cache_file_name = '_compilation.cache'
     field_id_files = 'FILES'
     field_id_libraries = 'LIBRARIES'
-    blank_cache_structure = {
+    blank_cache_element = {
         field_id_libraries: set(),
         field_id_files: {},
     }
@@ -79,7 +79,7 @@ class FileCache:
         """
         log.debug('Clearing cache...')
         # The cache file doesn't exist, so we will create a new one
-        self.cache = deepcopy(self.blank_cache_structure)
+        self.cache = {}
         self.save_cache()
 
     def save_cache(self):
@@ -92,7 +92,7 @@ class FileCache:
             pickle.dump(self.cache, cache_file)
         log.debug('...done')
 
-    def is_file_changed(self, file_object):
+    def is_file_changed(self, file_object, tool_name):
         """
         Compare the given md5 with the given file path from the cache, if
         the match return True or return False if the hashes do not match or
@@ -103,52 +103,70 @@ class FileCache:
             log.error('File does not exist: {0}'.format(path))
             return False
 
-        cached_md5 = self.cache[self.field_id_files].get(path, None)
-        with open(path, 'rb') as f:
-            md5 = hashlib.md5(f.read()).hexdigest()
-        if cached_md5 == md5:
-            # File is not changed
-            return False
-        else:
-            # File was changed
+        if tool_name in self.cache:
+            cached_md5 = self.cache[tool_name][
+                self.field_id_files
+            ].get(path, None)
+            with open(path, 'rb') as f:
+                md5 = hashlib.md5(f.read()).hexdigest()
+            if cached_md5 == md5:
+                # File is not changed
+                return False
+            else:
+                # File was changed
+                return True
+            # File is not in cache
             return True
-        # File is not in cache
-        return True
+        else:
+            return True
 
-    def library_in_cache(self, libname):
+    def library_in_cache(self, libname, tool_name):
         """
         Return True if the given *libname* library name is present in the
         local cache dictionary.
         """
-        return libname in self.cache[self.field_id_libraries]
+        if tool_name in self.cache:
+            return libname in self.cache[tool_name][self.field_id_libraries]
+        return False
 
-    def get_libraries(self):
+    def get_libraries(self, tool_name):
         """
         Return the local cache dictionary library name set.
         """
-        return self.cache[self.field_id_libraries]
+        if tool_name in self.cache:
+            return self.cache[tool_name][self.field_id_libraries]
+        return set()
 
-    def add_library(self, library):
+    def get_tool_names(self):
+        return list(self.cache.keys())
+
+    def add_library(self, library, tool_name):
         """
         Add the given *library* name to the local cache dictionary library
         name set.
         """
-        self.cache[self.field_id_libraries].add(library)
+        if tool_name not in self.cache:
+            self.cache[tool_name] = deepcopy(self.blank_cache_element)
+        self.cache[tool_name][self.field_id_libraries].add(library)
         log.debug('Library added to cache: ' + library)
 
-    def add_file(self, fileObject):
+    def add_file(self, fileObject, tool_name):
         """
         Add the given *fileObject* to the local cache file/md5 dictionary. The
         FileObject MD5 and compilation time are updated by this method before
         it is added to the cache.
         """
+        if tool_name not in self.cache:
+            self.cache[tool_name] = deepcopy(self.blank_cache_element)
         with open(fileObject.path, 'rb') as f:
             md5 = hashlib.md5(f.read()).hexdigest()
         fileObject.compile_time = datetime.datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S"
         )
         fileObject.md5 = md5
-        self.cache[self.field_id_files][fileObject.path] = fileObject.md5
+        self.cache[tool_name][self.field_id_files][fileObject.path] = (
+            fileObject.md5
+        )
         log.debug(
             'File added to cache: ' +
             os.path.basename(fileObject.path) +
@@ -156,13 +174,15 @@ class FileCache:
             md5
         )
 
-    def remove_file(self, fileObject):
+    def remove_file(self, fileObject, tool_name):
         """
         Remove the given *fileObject* from the local cache file/md5 dictionary
         if it is present.
         """
-        if fileObject.path in self.cache[self.field_id_files]:
-            del self.cache[self.field_id_files][fileObject.path]
+        if tool_name not in self.cache:
+            self.cache[tool_name] = deepcopy(self.blank_cache_element)
+        if fileObject.path in self.cache[tool_name][self.field_id_files]:
+            del self.cache[tool_name][self.field_id_files][fileObject.path]
             log.debug(
                 'File removed from cache: ' +
                 os.path.basename(fileObject.path)
