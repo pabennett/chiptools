@@ -146,15 +146,24 @@ class CommandLine(cmd.Cmd):
     def do_synthesise(self, command):
         """Synthesise the design using the chosen synthesis tool and report any
         errors Example: (Cmd) simulate my_library.my_entity"""
+        command_elems = command.split(' ')
+        if len(command_elems) == 2:
+            target, tool_name = command_elems
+        else:
+            target = command_elems[0]
+            tool_name = None
+
         try:
-            library, entity = command.split('.')
+            library, entity = target.split('.')
         except ValueError:
+            log.error('Command \"' + command + '\" not understood.')
             log.error(
                 "Please specify a library and entity.\n" +
-                "Example: (Cmd) synthesise my_library.my_entity"
+                "Example: (Cmd) synthesise my_library.my_entity [tool_name]"
             )
             return
-        self.project.synthesise(library, entity)
+
+        self.project.synthesise(library, entity, tool_name=tool_name)
 
     @wraps_do_commands
     def do_run_preprocessors(self, command):
@@ -171,16 +180,23 @@ class CommandLine(cmd.Cmd):
         """Compile the given entity in the given library using the chosen
         simulator and invoke the simulator GUI.
         Example: (Cmd) simulate my_library.my_entity"""
+        command_elems = command.split(' ')
+        if len(command_elems) == 2:
+            target, tool_name = command_elems
+        else:
+            target = command_elems[0]
+            tool_name = None
+
         try:
-            library, entity = command.split('.')
+            library, entity = target.split('.')
         except ValueError:
             log.error('Command \"' + command + '\" not understood.')
             log.error(
                 "Please specify a library and entity.\n" +
-                "Example: (Cmd) simulate my_library.my_entity"
+                "Example: (Cmd) simulate my_library.my_entity [tool_name]"
             )
             return
-        self.project.simulate(library, entity, gui=True)
+        self.project.simulate(library, entity, gui=True, tool_name=tool_name)
 
     @wraps_do_commands
     def do_clean(self, command):
@@ -191,11 +207,12 @@ class CommandLine(cmd.Cmd):
             log.error('No simulation path is set, aborting operation.')
             return
         log.info('Cleaning simulation folder: ' + simpath)
-        for libname in self.project.cache.get_libraries():
-            path = os.path.join(simpath, libname)
-            if os.path.exists(path):
-                log.info('Removing ' + path)
-                shutil.rmtree(path)
+        for tool_name in self.project.cache.get_tool_names():
+            for libname in self.project.cache.get_libraries(tool_name):
+                path = os.path.join(simpath, libname)
+                if os.path.exists(path):
+                    log.info('Removing ' + path)
+                    shutil.rmtree(path)
         log.info('...done')
         self.project.cache.initialise_cache()
 
@@ -413,5 +430,9 @@ class CommandLine(cmd.Cmd):
         Run the tests that were selected via the add_tests command and report
         the results.
         """
+        if len(command) > 0:
+            tool_name = command
+        else:
+            tool_name = None
         self.show_test_selection()
-        self.project.run_tests(self.test_set)
+        self.project.run_tests(self.test_set, tool_name=tool_name)
