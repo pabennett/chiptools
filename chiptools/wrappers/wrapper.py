@@ -87,6 +87,7 @@ def get_all_tools(project, user_paths, tool_type='synthesis'):
             if not inst.installed:
                 log.warning(
                     toolname.capitalize() +
+                    ' ' + tool_type + ' tool' +
                     ' could not be found.' +
                     ' Update .chiptoolsconfig or your PATH variable'
                 )
