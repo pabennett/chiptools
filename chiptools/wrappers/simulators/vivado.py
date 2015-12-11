@@ -94,11 +94,11 @@ class Vivado(Simulator):
             for name, binding in generics.items():
                 xelab_args += [
                     '-generic_top',
-                    '\"' + name.upper() + '=' + str(binding) + '\"',
+                    name.upper() + '=' + str(binding),
                 ]
             # Execute XELAB on the design files:
             xelab_args += [library + '.' + str(entity)]
-            xelab_args += ['-s' + ' ' + str(entity)]
+            xelab_args += ['-s', str(entity)]
             Vivado._call(self.xelab, xelab_args, cwd=cwd, quiet=False)
         # Fuse generates a simulation executable, this can be called now with
         # the specified simulator arguments:
