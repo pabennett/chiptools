@@ -72,18 +72,17 @@ An example .chiptoolsconfig is given below:
     unimacro        = C:\Xilinx\modelsim_10_3de_simlibs\unimacro
     secureip        = C:\Xilinx\modelsim_10_3de_simlibs\secureip
 
+Tool names under the simulation or synthesis executables categories will only
+be used if a tool wrapper plugin is available. A list of available
+plugins can be obtained by launching ChipTools and issuing the **plugins**
+command.
 
 Loading a design
 =================
 
-You can use ChipTools in two ways: with a project file or directly as a Python script. Both approaches will be discussed.
-
-As a Python Script
-------------------
-
-ChipTools can be imported and used in custom Python scripts, for example the
-code block below uses ChipTools to create a simple project and synthesise it
-using the Altera Quartus synthesis flow.
+Project data can be loaded into ChipTools in two ways: using a project file or
+by importing ChipTools in a Python script and using the **Project** class
+directly:
 
 .. code-block:: python
 

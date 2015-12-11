@@ -14,90 +14,109 @@ Introduction
 ------------
 
 The **Max Hold** example implements a basic component in VHDL to output the 
-maximum value of an input sequence until it is reset. For example if such a 
+maximum value of an input sequence until it is reset. For example, if such a 
 component were to be fed an oscillating input with steadily increasing
 amplitude we would expect the following result:
 
 .. image:: max_hold_demo.png
 
 This example will show you how you can use ChipTools to generate stimulus, 
-check responses, manage test reports and generate bit files for this component.
+check responses, manage test reports and generate bit files for the 
+**Max Hold** component.
 
+Source Files
+------------
 
-Project Creation
-----------------
+The following source files belong to the Max Hold example:
 
-Before ChipTools can use the files in this project we must first either create
-a ChipTools XML project file or write a Python script that imports ChipTools
-and then adds the source files directly. The Max Hold example directory holds
-the following files: 
+    * **VHDL Files:**
 
-    * **Project Files:**
+        * *max_hold.vhd* - The Max Hold component.
+        * *pkg_max_hold.vhd* - Supporting package for the Max Hold component.
+        * *tb_max_hold.vhd* - Testbench for the Max Hold component.
 
-        * max_hold.xml
-        * max_hold_project.py
-    * **Unit Tests:**
+    * **Simulation Files:**
 
-        * max_hold_tests.py
-    * **Source Files:**
+        * *max_hold_tests.py* - A collection of unit tests for the Max Hold component.
+        * *basic_unit_test.py* - A simple unit test for the Max Hold component.
+        * *simulation* - A subfolder where simulations will be executed.
 
-        * max_hold.vhd
-        * pkg_max_hold.vhd
-        * tb_max_hold.vhd 
-    * **Constraints:**
+    * **Synthesis Files:**
 
-        * max_hold.ucf
+        * *max_hold.ucf* - A constraints file for the Max Hold component when using the ISE synthesis flow.
+        * *max_hold.xdc* - A constraints file for the Max Hold component when using the Vivado synthesis flow.
+        * *synthesis* - A subfolder where synthesis will be executed.
 
-The **max_hold.xml** file provides an example ChipTools XML file for the 
-project and the **max_hold_project.py** file provides an example Python script.
+Creating the Project
+---------------------
 
-Python Script
+This section will walk through the steps required to load and use the source
+files with ChipTools. The complete example is available in 
+**max_hold_project.py** in the Max Hold project directory.
+
+Initial Setup
 ~~~~~~~~~~~~~
 
-To use ChipTools directly in a script the Project class must first be imported:
+Firstly, import the ChipTools Project wrapper and create a project instance:
 
 .. code-block:: python
 
     from chiptools.core.project import Project
 
-A new Project can now be created:
-
-.. code-block:: python
-
     # Create a new Project
     project = Project()
 
-Project objects hold all the information about the source files for an FPGA
-project as well as configuration data such as which FPGA part is being
-targeted. To configure the project we can use the **add_config** or
-**add_config_dict** methods:
+The project wrapper provides a set of functions for loading source files and
+configuring a project.
+
+Project Configuration
+~~~~~~~~~~~~~~~~~~~~~
+
+Configure the project to use the simulation and synthesis directories, the
+default simulation and synthesis tools and the FPGA part:
 
 .. code-block:: python
 
     # Configure project, you may wish to edit some of these settings depending
     # on which simulation/synthesis tools are installed on your system.
-    config = {
-        'simulation_directory': 'simulation',
-        'synthesis_directory': 'synthesis',
-        'simulator': 'modelsim',
-        'synthesiser': 'ise',
-        'part': 'xc6slx9-csg324-2',
-    }
-    # The Project class provides an add_config or add_config_dict method. We use
-    # the add_config_dict method here to load the config dictionary, you can set
-    # individual configuration items using add_config.
-    project.add_config_dict(**config)
+    project.add_config('simulation_directory', 'simulation')
+    project.add_config('synthesis_directory', 'synthesis')
+    project.add_config('simulator', 'modelsim')
+    project.add_config('synthesiser', 'ise')
+    project.add_config('part', 'xc6slx9-csg324-2')
 
-Source files can be added to a Project through the **add_file** or **add_files**
-methods:
+Apply Values to Generic Ports
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Designs can be parameterised via the use of a generic port on the top level
+component. You can assign values to top level port generics by using the 
+**add_generic** method:
+
+.. code-block:: python
+
+    # Synthesis generics can be assigned via the add_generic command, in this
+    # example we set the data_Width generic to 3:
+    project.add_generic('data_width', 3)
+
+Add Files
+~~~~~~~~~
+
+Add the Max Hold source files to the project and assign them to a library:
 
 .. code-block:: python
 
     # Source files for the max_hold component are added to the project. The Project
-    # 'add_file' method accepts a file path and library name, if no library is
-    # specified it will default to 'work'.
+    # **add_file** method accepts a file path and library name, if no library is
+    # specified it will default to 'work'. Other file attributes are available but
+    # not covered in this example.
     project.add_file('max_hold.vhd', library='lib_max_hold')
     project.add_file('pkg_max_hold.vhd', library='lib_max_hold')
+
+The testbench is also added to the project. The optional argument *synthesise*
+is set to 'False' when adding the testbench as we do not want to include it 
+in the files sent to synthesis:
+
+.. code-block:: python
 
     # When adding the testbench file we supply a 'synthesise' attribute and set it
     # to 'False', this tells the synthesis tool not to try to synthesise this file.
@@ -108,43 +127,82 @@ methods:
         synthesise=False
     )
 
-Constraints and unit tests can also be added to the Project using similar 
-methods:
+There are two unit test files provided for the Max Hold project, these can be
+added to the project using the **add_unittest** method:
 
 .. code-block:: python
-
-    # The design requires constraints before it can be synthesised. Add the
-    # constraints using the 'add_constraints' Project method.
-    project.add_constraints('max_hold.ucf')
 
     # Some unit tests have been written for the max_hold component and stored in
     # max_hold_tests.py. The Project class provides an 'add_unittest' method for
     # adding unit tests to the project, it expects a path to the unit test file.
     project.add_unittest('max_hold_tests.py')
+    project.add_unittest('basic_unit_test.py')
 
-The complete Python script **max_hold_project.py** creates and configures a
-Project before running the unit test suite and then finally synthesising the 
-design.
+Finally, the constraints files can be added to the project using the 
+**add_constraints** method, which takes a filepath argument and an optional
+**flow** name argument which allows you to explicitly name which synthesis flow
+the constraints are intended for:
 
-ChipTools XML Project
-~~~~~~~~~~~~~~~~~~~~~
+.. code-block:: python
 
-The pre-written project file **max_hold.xml** defines the source file paths
-and project configuration for the Max Hold component:
+    # The constraints are added to the project using the add_constraints method.
+    # The optional 'flow' argument is used to explicitly identify which synthesis
+    # flow the constraints are intended for (the default is to infer supported
+    # flows from the file extension).
+    project.add_constraints('max_hold.xdc', flow='vivado')
+    project.add_constraints('max_hold.ucf', flow='ise')
+
+The project is now fully configured and can be synthesised, simulated or the
+unit test suite can be executed to check that the requirements are met:
+
+.. code-block:: python
+
+    # Simulate the project interactively by presenting the simulator GUI:
+    project.simulate(
+        library='lib_tb_max_hold',
+        entity='tb_max_hold',
+        gui=True,
+        tool_name='modelsim'
+    )
+    # Run the automated unit tests on the project:
+    project.run_tests(tool_name='isim')
+    # Synthesise the project:
+    project.synthesise(
+        library='lib_max_hold',
+        entity='max_hold',
+        tool_name='vivado'
+    )
+
+Alternatively the ChipTools command line can be launched on the project to
+enable the user to run project operations interactively:
+
+.. code-block:: python
+
+    # Launch the ChipTools command line with the project we just configured:
+    from chiptools.core.cli import CommandLine
+    CommandLine(project).cmdloop()
+
+
+Project (XML) File
+~~~~~~~~~~~~~~~~~~
+
+The Project configuration can also be captured as an XML file. 
+The example project file **max_hold.xml** provides the same configuration as 
+**max_hold_project.py**:
 
 .. code-block:: xml
 
     <project>
         <config simulation_directory='simulation'/>
         <config synthesis_directory='synthesis'/>
-        <config simulator='modelsim'/>
-        <config synthesiser='ise'/>
-        <config part='xc6slx9-csg324-2'/>
-
+        <config simulator='vivado'/>
+        <config synthesiser='vivado'/>
+        <config part='xc7a100tcsg324-1'/>
         <unittest path='max_hold_tests.py'/>
-        <constraints path='max_hold.ucf'/>
+        <unittest path='basic_unit_test.py'/>
+        <constraints path='max_hold.ucf' flow='ise'/>
+        <constraints path='max_hold.xdc' flow='vivado'/>
         <generic data_width='3'/>
-
         <library name='lib_max_hold'>
             <file path='max_hold.vhd'/>
             <file path='pkg_max_hold.vhd'/>
@@ -157,36 +215,23 @@ and project configuration for the Max Hold component:
         </library>
     </project>
 
-This project file defines the same configuration as the **max_hold_project.py**
-script; to use it open a terminal in the Max Hold example directory and invoke
-ChipTools:
+The project XML file can either be loaded in the ChipTools command line
+interface using the **load_project** command, or by using the
+**XmlProjectParser** class in a custom script:
+
+.. code-block:: python
+
+    from chiptools.parsers.xml_project import XmlProjectParser
+    new_project = Project()
+    XmlProjectParser.load_project('max_hold.xml', new_project)
+    # new_project is now configured and ready to use.
+
+Via the command line interface:
 
 .. code-block:: bash
 
     $ chiptools
-
-The project can then be loaded using the ChipTools command line interface:
-
-.. code-block:: bash
-
     (cmd) load_project max_hold.xml
-
-Various operations can be performed on the Project once loaded, type 'help' for
-a full listing. To make sure the source files have no syntax errors we can issue
-the 'compile' command to compile each source file using the selected simulator:
-
-.. code-block:: bash
-
-    (Cmd) compile
-    [INFO] ...adding library: lib_max_hold
-    [INFO] ...compiling max_hold.vhd (FileType.VHDL) into library lib_max_hold
-    [INFO] ...compiling pkg_max_hold.vhd (FileType.VHDL) into library lib_max_hold
-    [INFO] ...adding library: lib_tb_max_hold
-    [INFO] ...compiling tb_max_hold.vhd (FileType.VHDL) into library lib_tb_max_hold
-    [INFO] ...saving cache file
-    [INFO] ...done
-    [INFO] 3 file(s) processed in 3.753499984741211s
-    (Cmd)
 
 Testing
 -------
@@ -195,16 +240,25 @@ To test the Max Hold component an accompanying VHDL testbench,
 *tb_max_hold.vhd*, is used to feed the component data from a stimulus input
 text file and record the output values in an output text file. By using 
 stimulus input files and response output files we gain the freedom to use a
-language of our choice to generate stimulus and check outputs.
+language of our choice to generate stimulus and check results.
 
 Testbench Stimulus File Format
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The testbench expects a file called **input.txt** to be present in the
-simulation folder and each line of the file should have the following format:
+simulation folder and expects the file to conform to the following format:
 
-    * Binary 8bit opcode (either 00000000 for reset or 00000001 for write)
-    * (*optional*) Binary Nbit data to write (only when write opcode is used)
+.. code-block:: xml
+
+    [8bit opcode] [Nbit data (if opcode = 00000001)]
+    [8bit opcode] [Nbit data (if opcode = 00000001)]
+    [8bit opcode] [Nbit data (if opcode = 00000001)]
+    ...
+
+Where:
+
+    * Binary 8bit opcode is either 00000000 for reset or 00000001 for write.
+    * Binary Nbit data is the data to write to the component, the number of bits is determined by the data_width generic.
 
 We will use Python to create stimulus files in this format for the testbench.
 
@@ -224,13 +278,13 @@ The **ChipToolsTest** class provides a wrapper around Python's Unittest
 while our test cases are executed.
 
 First off, create a ChipToolsTest class and define some basic information about
-the testbench that is to be simulated:
+the testbench:
 
 .. code-block:: python
 
     class MaxHoldsTestBase(ChipToolsTest):
         # Specify the duration your test should run for in seconds.
-        # If the test should run until the testbench aborts itself use 0.
+        # If the test should run "forever" use 0.
         duration = 0
         # Testbench generics are defined in this dictionary.
         # In this example we set the 'width' generic to 32, it can be overridden
@@ -247,13 +301,13 @@ the testbench.
 Tests are executed in the following way when using the ChipToolsTest class:
 
     * Execute simulationSetup function if defined.
-    * Invoke simulator using the set-up attributes.
-    * Execute test case (function with a 'test' prefix).
+    * Invoke and run simulator in console mode.
+    * Execute test case (functions with a 'test' prefix).
     * Execute simulatorTearDown function if defined.
 
-The **simulationSetup** function should be overloaded to run any 'preparation'
+The **simulationSetup** function should be overloaded to run any **preparation**
 code your testbench may require before it is executed. For testing the Max Hold
-component we can use this function to write the input file to the testbench 
+component we can use this function to write the input file for the testbench 
 using different stimulus waveforms that we have created in Python.
 
 .. code-block:: python
@@ -285,9 +339,7 @@ methods are executed after the simulator has finished, our tests will involve
 reading the simulator output file and comparing it to what our internal model
 expects given the same input waveform:
 
-
 .. code-block:: python
-
 
     def test_10_random_numbers(self):
         """Check that the Max Hold component correctly locates the maximum
@@ -311,7 +363,7 @@ expects given the same input waveform:
         # Compare the expected result to what the Testbench returned:
         self.assertListEqual(output_values, max_hold)
 
-The above example test is saved in **basic_unit_test.py** in the Max Hold 
+The above example is saved as **basic_unit_test.py** in the Max Hold 
 example folder. We can run this test by invoking ChipTools in the example
 folder, loading the **max_hold.xml** project and then adding and running the
 testsuite:
