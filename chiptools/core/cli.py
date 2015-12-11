@@ -33,15 +33,12 @@ SEP = ' ' * 4
 
 INTRO_TEMPL = (
     '\n' +
-    term.colourise('-'*79+'\n', fn='bold') +
-    'ChipTools ' +
+    '-'*79+'\n' +
+    term.colourise('ChipTools ', fn='bold') +
     '(version: ' + term.colourise('%(version)s', fg='teal') + ')' + '\n\n' +
     'Type ' + term.colourise('\'help\'', fg='yellow') + ' to get started.\n' +
-    'Type ' + term.colourise('\'load_project <path>\'', fg='yellow') +
-    ' to load a project.\n' +
-    'The current directory contains the following projects:\n' +
-    term.colourise('%(projects)s', fg='yellow') + '\n\n' +
-    term.colourise('-'*79+'\n', fn='bold')
+    '%(projects)s' + '\n' +
+    '-'*79+'\n'
 )
 
 
@@ -54,10 +51,27 @@ class CommandLine(cmd.Cmd):
                 self.project = Project()
                 projects = self.locateProjects()
                 if len(projects) > 0:
-                    prj = '\n'.join('\t{0}: {1}'.format(
-                        idx+1,
-                        path
-                    ) for idx, path in enumerate(projects))
+                    prj = (
+                        'Type ' + term.colourise(
+                            '\'load_project <path>\'', fg='yellow'
+                        ) +
+                        ' to load a project.\n'
+                    )
+                    prj += (
+                        'The current directory contains ' +
+                        'the following projects:\n'
+                    )
+                    prj += term.colourise(
+                        '\n'.join('\t{0}: {1}'.format(
+                            idx+1,
+                            path
+                        ) for idx, path in enumerate(projects)),
+                        fg='yellow'
+                    )
+                    self.intro = INTRO_TEMPL % dict(
+                        version=_version.__version__,
+                        projects=prj,
+                    )
             except exceptions.ProjectFileException:
                 log.error(
                     'The project file contains errors, ' +
@@ -71,11 +85,19 @@ class CommandLine(cmd.Cmd):
                 sys.exit(1)
         else:
             self.project = project
-
-        self.intro = INTRO_TEMPL % dict(
-            version=_version.__version__,
-            projects=prj,
-        )
+            prj = (
+                'Project contains ' + term.colourise(
+                    str(len(self.project.get_files())),
+                    fg='yellow'
+                ) + ' file(s) and ' + term.colourise(
+                    str(len(self.project.get_tests())),
+                    fg='yellow'
+                ) + ' test(s).'
+            )
+            self.intro = INTRO_TEMPL % dict(
+                version=_version.__version__,
+                projects=prj,
+            )
 
         self.test_set = set()
 
