@@ -224,6 +224,34 @@ class CommandLine(cmd.Cmd):
         )
 
     @wraps_do_commands
+    def do_plugins(self, command):
+        simulators = self.project.get_available_simulators()
+        synthesisers = self.project.get_available_synthesisers()
+        for i, plugin_registry in enumerate([simulators, synthesisers]):
+            print(term.yellow(['Simulator Plugins:', 'Synthesis Plugins:'][i]))
+            for name, inst in plugin_registry.items():
+                plugin_path = sys.modules[inst.__module__].__file__
+                plugin_file = os.path.basename(plugin_path)
+                print(
+                    SEP * 1 + term.darkgray(plugin_file) + '\n' +
+                    SEP * 2 + '{:<15}: {:<35}'.format(
+                        'Plugin Path',
+                        term.green(plugin_path)
+                    ) + '\n' +
+                    SEP * 2 + '{:<15}: {:<35}'.format(
+                        'Name',
+                        term.green(str(name))
+                    ) + '\n' +
+                    SEP * 2 + '{:<15}: {:<35}'.format(
+                        'Tool Path',
+                        [
+                            term.red('(not found) ' + str(inst.path)),
+                            term.green(str(inst.path))
+                        ][inst.installed]
+                    )
+                )
+
+    @wraps_do_commands
     def do_show_config(self, command):
         """Print out the project settings"""
         available_simulator_string = ''
