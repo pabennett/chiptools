@@ -170,7 +170,7 @@ class Constraints(object):
     def __init__(self, **kwargs):
         self.path = kwargs[ProjectAttributes.XML_ATTRIBUTE_PATH]
         self.fileType = FileType.TCL
-        self.flow = kwargs[ProjectAttributes.XML_ATTRIBUTE_FLOW]
+        self.flow = kwargs.get(ProjectAttributes.XML_ATTRIBUTE_FLOW, None)
         fileName, fileExtension = os.path.splitext(self.path)
         fileExtension = fileExtension.strip(' ')
         if fileExtension in fileExtensionsLookup.keys():
