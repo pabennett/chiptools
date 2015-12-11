@@ -1,13 +1,18 @@
 <project>
     <config simulation_directory='simulation'/>
     <config synthesis_directory='synthesis'/>
-    <config simulator='modelsim'/>
-    <config synthesiser='ise'/>
-    <config part='xc6slx9-csg324-2'/>
+    <config simulator='vivado'/>
+    <config synthesiser='vivado'/>
+    <config part='xc7a100tcsg324-1'/>
 
     <unittest path='max_hold_tests.py'/>
     <unittest path='basic_unit_test.py'/>
-    <constraints path='max_hold.ucf'/>
+
+    <!-- Used by the ISE synthesis flow only -->
+    <constraints path='max_hold.ucf' flow='ise'/>
+    <!-- Used by the Vivado synthesis flow only -->
+    <constraints path='max_hold.xdc' flow='vivado'/>
+
     <generic data_width='3'/>
 
     <library name='lib_max_hold'>
