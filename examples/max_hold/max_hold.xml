@@ -5,8 +5,8 @@
     <config synthesiser='vivado'/>
     <config part='xc7a100tcsg324-1'/>
 
-    <unittest path='max_hold_tests.py'/>
     <unittest path='basic_unit_test.py'/>
+    <unittest path='max_hold_tests.py'/>
 
     <!-- Used by the ISE synthesis flow only -->
     <constraints path='max_hold.ucf' flow='ise'/>

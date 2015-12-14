@@ -21,7 +21,7 @@ amplitude we would expect the following result:
 .. image:: max_hold_demo.png
 
 This example will show you how you can use ChipTools to generate stimulus, 
-check responses, manage test reports and generate bit files for the 
+check responses, create test reports and generate bit files for the 
 **Max Hold** component.
 
 Source Files
@@ -29,24 +29,20 @@ Source Files
 
 The following source files belong to the Max Hold example:
 
-    * **VHDL Files:**
+.. csv-table::
+   :header: "Name", "Type", "Description"
+   :widths: 20, 20, 10
 
-        * *max_hold.vhd* - The Max Hold component.
-        * *pkg_max_hold.vhd* - Supporting package for the Max Hold component.
-        * *tb_max_hold.vhd* - Testbench for the Max Hold component.
-
-    * **Simulation Files:**
-
-        * *max_hold_tests.py* - A collection of unit tests for the Max Hold component.
-        * *basic_unit_test.py* - A simple unit test for the Max Hold component.
-        * *simulation* - A subfolder where simulations will be executed.
-
-    * **Synthesis Files:**
-
-        * *max_hold.ucf* - A constraints file for the Max Hold component when using the ISE synthesis flow.
-        * *max_hold.xdc* - A constraints file for the Max Hold component when using the Vivado synthesis flow.
-        * *synthesis* - A subfolder where synthesis will be executed.
-
+   "max_hold.vhd",        "VHDL",        "The Max Hold component."
+   "pkg_max_hold.vhd",    "VHDL",        "Supporting package for the Max Hold component."
+   "tb_max_hold.vhd",     "VHDL",        "Testbench for the Max Hold component."
+   "max_hold_tests.py",   "Python",      "A collection of advanced unit tests."
+   "basic_unit_tests.py", "Python",      "A simple unit test."
+   "max_hold.ucf",        "Constraints", "Constraints file when using the ISE synthesis flow."
+   "max_hold.xdc",        "Constraints", "Constraints file when using the Vivado synthesis flow."
+   "Simulation",          "Folder",      "Output directory for simulation tasks."
+   "Synthesis",           "Folder",      "Output directory for synthesis tasks."
+ 
 Creating the Project
 ---------------------
 
@@ -72,8 +68,25 @@ configuring a project.
 Project Configuration
 ~~~~~~~~~~~~~~~~~~~~~
 
-Configure the project to use the simulation and synthesis directories, the
-default simulation and synthesis tools and the FPGA part:
+Projects should be configured with the following information before they are 
+used:
+
+.. csv-table::
+   :header: "Configuration Item", "Description"
+   :widths: 10, 20
+
+   "simulation_directory", "Output directory for simulation tasks."
+   "synthesis_directory", "Output directory for synthesis tasks."
+   "fpga_part", "The FPGA part to target when performing a synthesis flow."
+   "simulator", "Name of the default simulator to use when performing simulations."
+   "synthesiser", "Name of the default synthesiser to use when performing synthesis."
+
+The project wrapper provides two methods for setting configuration data: 
+**add_config**, which accepts a name, value pair as arguments or
+**add_config_dict**, which accepts a dictionary of name, value pairs.
+
+The following code sample uses the **add_config** method to configure the
+project wrapper.
 
 .. code-block:: python
 
@@ -88,7 +101,7 @@ default simulation and synthesis tools and the FPGA part:
 Apply Values to Generic Ports
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Designs can be parameterised via the use of a generic port on the top level
+FPGA designs can be parameterised via the use of a generic port on the top level
 component. You can assign values to top level port generics by using the 
 **add_generic** method:
 
@@ -98,8 +111,8 @@ component. You can assign values to top level port generics by using the
     # example we set the data_Width generic to 3:
     project.add_generic('data_width', 3)
 
-Add Files
-~~~~~~~~~
+Add Source Files
+~~~~~~~~~~~~~~~~
 
 Add the Max Hold source files to the project and assign them to a library:
 
@@ -112,9 +125,9 @@ Add the Max Hold source files to the project and assign them to a library:
     project.add_file('max_hold.vhd', library='lib_max_hold')
     project.add_file('pkg_max_hold.vhd', library='lib_max_hold')
 
-The testbench is also added to the project. The optional argument *synthesise*
-is set to 'False' when adding the testbench as we do not want to include it 
-in the files sent to synthesis:
+The testbench is also added to the project under a different library.
+The optional argument *synthesise* is set to 'False' when adding the testbench
+as we do not want to include it in the files sent to synthesis:
 
 .. code-block:: python
 
@@ -164,7 +177,7 @@ unit test suite can be executed to check that the requirements are met:
         gui=True,
         tool_name='modelsim'
     )
-    # Run the automated unit tests on the project:
+    # Run the automated unit tests on the project (console simulation):
     project.run_tests(tool_name='isim')
     # Synthesise the project:
     project.synthesise(
@@ -186,7 +199,9 @@ enable the user to run project operations interactively:
 Project (XML) File
 ~~~~~~~~~~~~~~~~~~
 
-The Project configuration can also be captured as an XML file. 
+The Project configuration can also be captured as an XML file, which provides
+an alternative method of maintaining the project configuration.
+
 The example project file **max_hold.xml** provides the same configuration as 
 **max_hold_project.py**:
 
@@ -215,18 +230,8 @@ The example project file **max_hold.xml** provides the same configuration as
         </library>
     </project>
 
-The project XML file can either be loaded in the ChipTools command line
-interface using the **load_project** command, or by using the
-**XmlProjectParser** class in a custom script:
-
-.. code-block:: python
-
-    from chiptools.parsers.xml_project import XmlProjectParser
-    new_project = Project()
-    XmlProjectParser.load_project('max_hold.xml', new_project)
-    # new_project is now configured and ready to use.
-
-Via the command line interface:
+The project XML file can be loaded in the ChipTools command line interface 
+using the **load_project** command:
 
 .. code-block:: bash
 
@@ -239,35 +244,26 @@ Testing
 To test the Max Hold component an accompanying VHDL testbench, 
 *tb_max_hold.vhd*, is used to feed the component data from a stimulus input
 text file and record the output values in an output text file. By using 
-stimulus input files and response output files we gain the freedom to use a
+stimulus input files and output files we gain the freedom to use the
 language of our choice to generate stimulus and check results.
 
-Testbench Stimulus File Format
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The testbench expects a file called **input.txt** to be present in the
-simulation folder and expects the file to conform to the following format:
-
-.. code-block:: xml
-
-    [8bit opcode] [Nbit data (if opcode = 00000001)]
-    [8bit opcode] [Nbit data (if opcode = 00000001)]
-    [8bit opcode] [Nbit data (if opcode = 00000001)]
-    ...
-
-Where:
-
-    * Binary 8bit opcode is either 00000000 for reset or 00000001 for write.
-    * Binary Nbit data is the data to write to the component, the number of bits is determined by the data_width generic.
+A simple stimulus file format is used by the testbench that allows a data
+write or a reset to be issued to the unit under test. Each line of the stimulus
+file contains a binary 4 bit *opcode*, which supports either a **reset**
+instruction: 0000 or a **write** instruction: 0001. When a write 
+instruction is used a binary data field must follow on the same line; the
+width of the binary data field must match the data width on the testbench
+generic.
 
 We will use Python to create stimulus files in this format for the testbench.
 
 Unit Tests
 ~~~~~~~~~~
 
-We can use the Python Unittest framework to define tests for the Max Hold
-component by first importing the **ChipToolsTest** class from 
-**chiptools.testing.testloader**
+.. note::  The following example can be found in **examples/max_hold/basic_unit_test.py**
+
+We can use Python to define tests for the Max Hold component by first importing
+the **ChipToolsTest** class from **chiptools.testing.testloader**
 
 .. code-block:: python
     
@@ -284,7 +280,7 @@ the testbench:
 
     class MaxHoldsTestBase(ChipToolsTest):
         # Specify the duration your test should run for in seconds.
-        # If the test should run "forever" use 0.
+        # If 0 is used, the simulation will run until it self-terminates.
         duration = 0
         # Testbench generics are defined in this dictionary.
         # In this example we set the 'width' generic to 32, it can be overridden
@@ -298,20 +294,23 @@ the testbench:
 These attributes provide the basic information required by ChipTools to execute
 the testbench.
 
-Tests are executed in the following way when using the ChipToolsTest class:
+Tests are executed in the following sequence when using the ChipToolsTest class:
 
-    * Execute simulationSetup function if defined.
-    * Invoke and run simulator in console mode.
-    * Execute test case (functions with a 'test' prefix).
-    * Execute simulatorTearDown function if defined.
+    #. Execute the unit test class **simulationSetup** function if defined.
+    #. Invoke and run simulator in console mode using the simulator attributes.
+    #. Execute the test case (a test case is any class method with a 'test prefix').
+    #. Execute the unit test class **simulatorTearDown** function if defined.
+
+If the unit test class provides multiple testcases they can be executed
+individually or as a batch in ChipTools. The sequence above is executed for
+each individual test case.
 
 The **simulationSetup** function should be overloaded to run any **preparation**
 code your testbench may require before it is executed. For testing the Max Hold
 component we can use this function to write the input file for the testbench 
-using different stimulus waveforms that we have created in Python.
+using different stimulus waveforms that we have created in Python:
 
 .. code-block:: python
-
 
     def simulationSetUp(self):
         """The ChipTools test framework will call the simulationSetup method
@@ -329,8 +328,8 @@ using different stimulus waveforms that we have created in Python.
             for value in self.values:
                 f.write(
                     '{0} {1}\n'.format(
-                        '00000001',  # write instruction
-                        bin(value)[2:].zfill(32),
+                        '0001',  # write instruction opcode
+                        bin(value)[2:].zfill(32), # write 32bit data
                     )
                 )
 
@@ -341,9 +340,9 @@ expects given the same input waveform:
 
 .. code-block:: python
 
-    def test_10_random_numbers(self):
+    def test_output(self):
         """Check that the Max Hold component correctly locates the maximum
-        value in 10 random numbers."""
+        value."""
 
         # Get the path to the testbench input file.
         simulator_output_path = os.path.join(self.simulation_root, 'output.txt')
@@ -365,63 +364,31 @@ expects given the same input waveform:
 
 The above example is saved as **basic_unit_test.py** in the Max Hold 
 example folder. We can run this test by invoking ChipTools in the example
-folder, loading the **max_hold.xml** project and then adding and running the
+folder, loading the **max_hold_basic_test.xml** project and then adding and running the
 testsuite:
 
 
 .. code-block:: bash
 
     $ chiptools
-    (cmd) load_project max_hold.xml
-    (cmd) run_tests
-    [INFO] ...skipping: max_hold.vhd
-    [INFO] ...skipping: pkg_max_hold.vhd
-    [INFO] ...skipping: tb_max_hold.vhd
-    [INFO] ...skipped 3 unmodified file(s). Use "clean" to erase the file cache
-    [INFO] ...saving cache file
-    [INFO] ...done
-    [INFO] 3 file(s) processed in 53.999900817871094ms
-    [INFO] chiptools_tests_basic_unit_test.MaxHoldsTestBase.test_10_random_numbers
-    [INFO] Added test_10_random_numbers (chiptools_tests_basic_unit_test.MaxHoldsTestBase) to testsuite
-    [INFO] Running testsuite...
-    [INFO] Reading C:/modelsim_dlx_10.3d/tcl/vsim/pref.tcl
-    [INFO]
-    [INFO] # 10.3d
-    [INFO]
-    [INFO] # vsim -L unimacro -L xilinxcorelib -L unisim -L secureip -L simprim -Gdata_width=32 -c -do "set NumericStdNoWarnings 1
-    [INFO] # run -all;quit" lib_tb_max_hold.tb_max_hold
-    [INFO] # Start time: 17:16:58 on Nov 30,2015
-    [INFO] # //  ModelSim DE 10.3d Oct  7 2014
-    [INFO] # //
-    [INFO] # //  Copyright 1991-2014 Mentor Graphics Corporation
-    [INFO] # //  All Rights Reserved.
-    [INFO] # //
-    [INFO] # //  THIS WORK CONTAINS TRADE SECRET AND PROPRIETARY INFORMATION
-    [INFO] # //  WHICH IS THE PROPERTY OF MENTOR GRAPHICS CORPORATION OR ITS
-    [INFO] # //  LICENSORS AND IS SUBJECT TO LICENSE TERMS.
-    [INFO] # //
-    [INFO] # Loading std.standard
-    [INFO] # Loading std.textio(body)
-    [INFO] # Loading ieee.std_logic_1164(body)
-    [INFO] # Loading ieee.numeric_std(body)
-    [INFO] # Loading ieee.std_logic_textio(body)
-    [INFO] # Loading ieee.math_real(body)
-    [INFO] # Loading lib_max_hold.pkg_max_hold
-    [INFO] # Loading std.env(body)
-    [INFO] # Loading lib_tb_max_hold.tb_max_hold(beh)
-    [INFO] # Loading lib_max_hold.max_hold(rtl)
-    [INFO] # set NumericStdNoWarnings 1
-    [INFO] # run -all
-    [INFO] # End time: 17:16:59 on Nov 30,2015, Elapsed time: 0:00:01
-    [INFO] # Errors: 0, Warnings: 0
-    ok test_10_random_numbers (chiptools_tests_basic_unit_test.MaxHoldsTestBase)
-    Time Elapsed: 0:00:02.097000
+    (Cmd) load_project max_hold_basic_test.xml
+    (Cmd) run_tests
+    ok test_output (chiptools_tests_basic_unit_test.MaxHoldsTestBase)
+    Time Elapsed: 0:00:05.846975
+    (Cmd)
 
-Note: When the max_hold.xml project is loaded, additional unit tests from the
-**max_hold_tests.py** unit test script will be added. You can selectively run
-tests by using the **show_tests**, **add_tests** and **remove_tests** commands
-to build a test sequence before executing the **run_tests** commamd.
+Unit Test Report
+~~~~~~~~~~~~~~~~
 
+When ChipTools has finished running a test suite invoked with the **run_tests**
+command it will place a report called **report.html** in the simulation 
+directory. The unit test report indicates which tests passed or failed and
+provides debug information on tests that have failed. A sample report for the
+full Max Hold unit test suite is given below:
+
+.. image:: max_hold_results.png
+
+.. note::  The test report is overwritten each time the unit test suite is executed, so backup old reports if you want to keep them.
 
 Advanced Unit Tests
 ~~~~~~~~~~~~~~~~~~~~
@@ -432,29 +399,34 @@ produce a large set of tests to thoroughly test the component and provide
 detailed information about how it is performing. The **max_hold_tests.py**
 file in the Max Hold example folder implements the following tests:
 
-   * max_hold_constant_data_0
-   * max_hold_constant_data_1
-   * max_hold_constant_data_100
-   * max_hold_impulse_test
-   * max_hold_ramp_down_test
-   * max_hold_ramp_up_test
-   * max_hold_random_single_sequence
-   * max_hold_random_tests_100bit
-   * max_hold_random_tests_128bit
-   * max_hold_random_tests_1bit
-   * max_hold_random_tests_32bit
-   * max_hold_random_tests_8bit
-   * max_hold_sinusoid_single_sequence
-   * max_hold_sinusoid_test
-   * max_hold_square_test
+.. csv-table::
+   :header: "Test Name", "Data Width", "Description"
+   :widths: 20, 5, 30
 
-When the tests are run, the Unit Test will also create an output image in the
-simulation folder to show a graph of the input data with the model data and
+   "max_hold_constant_data_0", 32, "Continuous data test using zero"
+   "max_hold_constant_data_1", 32, "Continuous data test using 1"
+   "max_hold_constant_data_100", 32, "Continuous data test using 100"
+   "max_hold_impulse_test", 32, "The first data point is nonzero followed by constant zero data." 
+   "max_hold_ramp_down_test", 32, "Successive random length sequences of reducing values."
+   "max_hold_ramp_up_test", 32, "Successive random length sequences of increasing values."
+   "max_hold_random_single_sequence", 32, "Single sequence of 200 random values."
+   "max_hold_random_tests_100bit", 100, "Successive random length sequences of 100bit random values."
+   "max_hold_random_tests_128bit", 128, "Successive random length sequences of 128bit random values." 
+   "max_hold_random_tests_1bit", 1, "Successive random length sequences of 1bit random values."
+   "max_hold_random_tests_32bit", 32, "Successive random length sequences of 32bit random values." 
+   "max_hold_random_tests_8bit", 8, "Successive random length sequences of 8bit random values." 
+   "max_hold_sinusoid_single_sequence", 12, "Single sinusoidal sequence."  
+   "max_hold_sinusoid_test", 12, "Multiple sinusoidal sequences of random length." 
+   "max_hold_square_test", 8, "Multiple toggling sequences of random length."
+
+When the tests are run, the Unit Test will also create an output image for each
+test in the simulation folder to show a graph of the input data with the model data and
 the Max Hold component output data. For example, the max_hold_sinusoid_single_sequence
 test produces the following output:
 
 .. image:: max_hold_sinusoid_single_sequence.png
 
-Plots such as these can be easily created with Matplotlib and provide a powerful
-diagnostic tool when debugging components.
+.. note:: For this example, graph generation requires `Matplotlib <http://matplotlib.org/>`_ (optionally with `Seaborn <http://stanford.edu/~mwaskom/software/seaborn/>`_)
 
+Plots such as these provide a powerful diagnostic tool when debugging components
+or analysing performance.
