@@ -14,7 +14,7 @@ providing a consistent interface to vendor applications and automating simulatio
    * Automate test execution and reporting using the Python Unittest framework.
    * Automatically check and archive build outputs.
    * Preprocess and update files before synthesis to automate tasks such as updating version registers.
-   * Free and open source under the `Apache 2.0 License <https://www.apache.org/licenses/LICENSE-2.0>`_.
+   * Free and open source under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0).
 
 ## Getting Started
 ```
