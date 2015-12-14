@@ -160,6 +160,15 @@ class XmlProjectParser:
     | part                 | FPGA part to target when performing synthesis.   |
     +----------------------+--------------------------------------------------+
 
+    In addition to the above configuration items, the *config* tag also allows
+    tool-specific argument passing through the use of config attributes using
+    the following naming convention: *args_toolname_flowname*, where
+    *toolname* is the name of the tool to target and *flowname* is the name
+    of a specific tool flow stage. For example:
+    args_ise_par='-mt 4 -ol high -xe n' would pass the arguments
+    *-mt 4 -ol high -xe n* to the place and route stage of an ISE synthesis
+    flow. Each tool wrapper implements its own specific flow stage names.
+
     .. note:: If a configuration item is already defined any new definitions
               will be ignored. A warning will be displayed if a
               redefinition is attempted.
