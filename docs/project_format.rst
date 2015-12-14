@@ -2,4 +2,5 @@
 Project Format
 ##############
 
-**Coming soon**
+.. currentmodule:: chiptools.parsers.xml_project
+.. autoclass:: XmlProjectParser
