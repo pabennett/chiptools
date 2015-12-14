@@ -9,12 +9,12 @@ providing a consistent interface to vendor applications and automating simulatio
 
 ### Key features
 
-    * Seamlessly switch between vendor applications without modifying build scripts or project files.
-    * Enhance testbenches with Python based stimulus generation and checking.
-    * Automate test execution and reporting using the Python Unittest framework.
-    * Automatically check and archive build outputs.
-    * Preprocess and update files before synthesis to automate tasks such as updating version registers.
-    * Free and open source under the `Apache 2.0 License <https://www.apache.org/licenses/LICENSE-2.0>`_.
+   * Seamlessly switch between vendor applications without modifying build scripts or project files.
+   * Enhance testbenches with Python based stimulus generation and checking.
+   * Automate test execution and reporting using the Python Unittest framework.
+   * Automatically check and archive build outputs.
+   * Preprocess and update files before synthesis to automate tasks such as updating version registers.
+   * Free and open source under the `Apache 2.0 License <https://www.apache.org/licenses/LICENSE-2.0>`_.
 
 ## Getting Started
 ```
