@@ -16,19 +16,18 @@ providing a consistent interface to vendor applications and automating simulatio
 Key features
 ------------
 
-    * Seamlessly switch between vendor applications without having to modify build scripts or restructure project files.
-    * Quickly design and deploy testbenches with Python based stimulus generation and checking.
-    * Hook directly into the Python Unittest framework to allow automated execution and reporting of your unit test suite.
+    * Seamlessly switch between vendor applications without modifying build scripts or project files.
+    * Enhance testbenches with Python based stimulus generation and checking.
+    * Automate test execution and reporting using the Python Unittest framework.
     * Automatically check and archive build outputs.
-    * Preprocess and update files during a build to enable features such as automatically updating version registers.
-    * Build and test projects using one procedure to reduce the learning curve for new starters and reduce the burden on code reviewers.
+    * Preprocess and update files before synthesis to automate tasks such as updating version registers.
     * Free and open source under the `Apache 2.0 License <https://www.apache.org/licenses/LICENSE-2.0>`_.
 
 Supported Tools
 ===============
 
-The following tools are currently supported, or support will be added in the 
-near future. 
+The following tools are currently supported, support for additional tools
+will be added in the future. 
 
 Simulation Tools
 ----------------
