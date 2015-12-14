@@ -50,14 +50,14 @@ begin
     stim_parser : process
         constant input_path     : string := "input.txt";
         constant output_path    : string := "output.txt";
-        constant opcode_reset   : bit_vector(7 downto 0) := x"00";
-        constant opcode_write   : bit_vector(7 downto 0) := x"01";
+        constant opcode_reset   : bit_vector(3 downto 0) := x"0";
+        constant opcode_write   : bit_vector(3 downto 0) := x"1";
         file     input_file     : text;
         file     output_file    : text;
         variable data_line      : line;
         variable output_line    : line;
         variable status         : file_open_status := status_error;
-        variable opcode         : bit_vector(7 downto 0);
+        variable opcode         : bit_vector(3 downto 0);
         variable data           : bit_vector(data_width-1 downto 0);
         variable read_ok        : boolean;
         variable first_call     : boolean := true;

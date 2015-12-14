@@ -53,14 +53,14 @@ class MaxHoldsTestBase(ChipToolsTest):
             for value in self.values:
                 f.write(
                     '{0} {1}\n'.format(
-                        '00000001',  # write instruction
-                        bin(value)[2:].zfill(32),
+                        '0001',  # write instruction opcode
+                        bin(value)[2:].zfill(32), # write 32bit data
                     )
                 )
 
-    def test_10_random_numbers(self):
+    def test_output(self):
         """Check that the Max Hold component correctly locates the maximum
-        value in 10 random numbers."""
+        value."""
 
         # Get the path to the testbench input file.
         simulator_output_path = os.path.join(self.simulation_root, 'output.txt')

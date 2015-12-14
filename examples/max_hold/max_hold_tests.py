@@ -97,12 +97,12 @@ class MaxHoldsTestBase(ChipToolsTest):
         with open(path, 'w') as f:
             for sequence in values:
                 # Reset the component at the beginning of a new sequence.
-                f.write('{0}\n'.format(bin(reset_opcode)[2:].zfill(8)))
+                f.write('{0}\n'.format(bin(reset_opcode)[2:].zfill(4)))
                 # Write each value in the sequence to the stimulus file
                 for value in sequence:
                     f.write(
                         '{0} {1}\n'.format(
-                            bin(write_opcode)[2:].zfill(8),
+                            bin(write_opcode)[2:].zfill(4),
                             bin(value)[2:].zfill(data_width),
                         )
                     )
