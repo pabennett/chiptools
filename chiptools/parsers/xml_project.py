@@ -7,7 +7,6 @@ import time
 from xml.dom import minidom
 
 from chiptools.common import utils
-from chiptools.common import exceptions
 from chiptools.common.filetypes import ProjectAttributes
 
 
@@ -22,8 +21,149 @@ PROJECT_DICT_GENERICS = 'generics'
 
 class XmlProjectParser:
     """
-    The XmlProjectParser class implements an XML parser for the project file
-    XML format.
+    The XmlProjectParser class implements an XML parser for project files using
+    the following format.
+
+    .. note:: All paths appearing in a project file are relative to the
+              location of the project file.
+
+    **<project>**
+
+    The project parent tag encapsulates all configuration and file tags
+    belonging to a project file. Existing project files may be imported into
+    a project by including a project tag with the *path* attribute pointing to
+    the existing XML file.
+
+    +-----------+--------+----------------------------------------------------+
+    | Attribute | Value  | Description                                        |
+    +===========+========+====================================================+
+    | synthesise| True   | (default) These files are included for synthesis.  |
+    |           +--------+----------------------------------------------------+
+    |           | False  | Exclude these files from synthesis.                |
+    +-----------+--------+----------------------------------------------------+
+    | path      |*string*| Path to existing project file to include.          |
+    +-----------+--------+----------------------------------------------------+
+
+    **<library>**
+
+    The *library* tag encapsulates is used to group all child file tags into
+    the same library. If a file is not associated with a library it will
+    default to the *work* library.
+
+    +-----------+--------+----------------------------------------------------+
+    | Attribute | Value  | Description                                        |
+    +===========+========+====================================================+
+    | synthesise| True   | (default) These files are included for synthesis.  |
+    |           +--------+----------------------------------------------------+
+    |           | False  | Exclude these files from synthesis.                |
+    +-----------+--------+----------------------------------------------------+
+    | name      |*string*| (required) Name of the HDL library for these files.|
+    +-----------+--------+----------------------------------------------------+
+
+    **<file>**
+
+    The *file* tag is used to define a source file to include in the project.
+    Source files can either be text based HDL source files (VHDL or Verilog) or
+    they can be netlists. Tool wrapper plugins will check the file extension to
+    determine how they should process the file, for example .VHD and .V files
+    will be processed with vcom and vlog respectively by Modelsim and .ngc
+    files will be copied into the synthesis folder by ISE.
+
+    +-----------+--------+----------------------------------------------------+
+    | Attribute | Value  | Description                                        |
+    +===========+========+====================================================+
+    | synthesise| True   | (default) This file is included for synthesis.     |
+    |           +--------+----------------------------------------------------+
+    |           | False  | Exclude this file from synthesis.                  |
+    +-----------+--------+----------------------------------------------------+
+    | path      |*string*| (required) Path to the source file.                |
+    +-----------+--------+----------------------------------------------------+
+
+    .. note:: If a file tag is used outside of a library tag the file will
+              automatically be associated with the *work* library and a
+              warning will be displayed.
+
+    .. note:: File tags support additional optional attributes of the form
+             *args_toolname_compile* where *toolname* is the name of a specific
+             tool wrapper (for example: *modelsim*). The attribute value is
+             passed to the simulation tool during compilation if it is the
+             selected tool. *args_modelsim_compile='-2008'* would pass the
+             command line arg '-2008' to Modelsim when it compiles the file.
+
+    **<constraints>**
+
+    The *constraints* tag defines the path to a constraints file to be included
+    when performing synthesis on the project. Constraints can be limited to a
+    specific synthesis tool via use of the *flow* attribute.
+
+    +-----------+--------+----------------------------------------------------+
+    | Attribute | Value  | Description                                        |
+    +===========+========+====================================================+
+    | path      |*string*| (required) Path to the constraints file.           |
+    +-----------+--------+----------------------------------------------------+
+    | flow      |*string*| (optional) Name of the associated synthesis tool.  |
+    +-----------+--------+----------------------------------------------------+
+
+    **<unittest>**
+
+    The *unittest* tag defines the path to a Python based unit test suite to
+    be included in the project test suite. Unit tests must be valid Python
+    files with a .py extension. If the file is invalid or contains syntax
+    errors it will be excluded from the project test suite. Runtime errors
+    occurring from a unit test will result in that test failing.
+
+
+    +-----------+--------+----------------------------------------------------+
+    | Attribute | Value  | Description                                        |
+    +===========+========+====================================================+
+    | path      |*string*| (required) Path to the unit test file.             |
+    +-----------+--------+----------------------------------------------------+
+
+    **<generic>**
+
+    The *generic* tag defines a generic value setting for the top level entity
+    during synthesis. Generic attribute names map to the name of a generic on
+    the top level entity and the associated value is passed as the generic
+    value.
+
+    +----------+-------+------------------------------------------------------+
+    | Attribute| Value | Description                                          |
+    +==========+=======+======================================================+
+    | (name)   |(value)| Set top level generic *name* to *value* at synthesis.|
+    +----------+-------+------------------------------------------------------+
+
+    **<config>**
+
+    The *config* tag defines a config value setting for the project.
+    Config attribute names map to the name of a configuration item in the
+    project and the associated value is passed as the config value.
+
+    +----------+-------+------------------------------------------------------+
+    | Attribute| Value | Description                                          |
+    +==========+=======+======================================================+
+    | (name)   |(value)| Set the configuration item *name* to *value*.        |
+    +----------+-------+------------------------------------------------------+
+
+    The following configuration items can be set in a project:
+
+    +----------------------+--------------------------------------------------+
+    | Config               | Description                                      |
+    +======================+==================================================+
+    | simulation_directory | Directory to use as simulation working directory.|
+    +----------------------+--------------------------------------------------+
+    | synthesis_directory  | Directory to use as synthesis working directory. |
+    +----------------------+--------------------------------------------------+
+    | simulator            | Default simulator to use for this project.       |
+    +----------------------+--------------------------------------------------+
+    | synthesiser          | Default synthesiser to use for this project.     |
+    +----------------------+--------------------------------------------------+
+    | part                 | FPGA part to target when performing synthesis.   |
+    +----------------------+--------------------------------------------------+
+
+    .. note:: If a configuration item is already defined any new definitions
+              will be ignored. A warning will be displayed if a
+              redefinition is attempted.
+
     """
 
     # Process each of the file attributes using the following functions
