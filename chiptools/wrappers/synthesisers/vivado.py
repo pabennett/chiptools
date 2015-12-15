@@ -29,8 +29,8 @@ class Vivado(synthesiser.Synthesiser):
         self.project_path = None
 
     @synthesiser.throws_synthesis_exception
-    def synthesise(self, library, entity):
-        super(Vivado, self).synthesise(library, entity)
+    def synthesise(self, library, entity, fpga_part=None):
+        super(Vivado, self).synthesise(library, entity, fpga_part)
         # Make a temporary working directory for the synth tool
         start_time = datetime.datetime.now()
         with tempfile.TemporaryDirectory(
@@ -40,7 +40,8 @@ class Vivado(synthesiser.Synthesiser):
                 'Created temporary synthesis directory: ' + working_directory
             )
             # Get project configuration
-            part = self.project.get_fpga_part()
+            if fpga_part is None:
+                fpga_part = self.project.get_fpga_part()
             generics = self.project.get_generics()
             synthesis_name = entity + '_synth_' + start_time.strftime(
                 '%d%m%y_%H%M%S'
@@ -65,7 +66,7 @@ class Vivado(synthesiser.Synthesiser):
             # write checkpoint.
             self.synth_design(
                 synthesis_name,
-                part,
+                fpga_part,
                 entity,
                 generics,
                 *self.project.get_tool_arguments(self.name, 'synthesis')

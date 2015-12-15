@@ -42,7 +42,7 @@ class Quartus(synthesiser.Synthesiser):
         self.quartus_sh = os.path.join(self.path, 'quartus_sh')
 
     @synthesiser.throws_synthesis_exception
-    def synthesise(self, library, entity):
+    def synthesise(self, library, entity, fpga_part=None):
         """
         Synthesise the target entity in the given library for the currently
         loaded project.
@@ -54,7 +54,7 @@ class Quartus(synthesiser.Synthesiser):
         * Generate reports
         * Archive the outputs
         """
-        super(Quartus, self).synthesise(library, entity)
+        super(Quartus, self).synthesise(library, entity, fpga_part)
         # make a temporary working directory for the synth tool
         import tempfile
         startTime = datetime.datetime.now()
@@ -71,11 +71,13 @@ class Quartus(synthesiser.Synthesiser):
             synthesisDirectory = os.path.join(workingDirectory, synthName)
             os.makedirs(synthesisDirectory)
             projectFilePath = os.path.join(synthesisDirectory, entity + '.tcl')
+            if fpga_part is None:
+                fpga_part = self.project.get_fpga_part()
             self.makeProject(
                 projectFilePath,
                 self.project.get_synthesis_fileset(),
                 self.project.get_constraints(),
-                self.project.get_fpga_part(),
+                fpga_part,
                 self.project.get_generics(),
                 synthesisDirectory,
                 entity,
@@ -163,20 +165,23 @@ class Quartus(synthesiser.Synthesiser):
         # Add user constraints and other source files
         sdcString = ''
         for fileObject in constraints:
-            if fileObject.fileType == FileType.TCL:
-                with open(fileObject.path, 'r') as constraintsFile:
-                    projectFileString += constraintsFile.read()
-                    projectFileString += '\n'
-                    log.info(
-                        'Added supplementary TCL script: ' + fileObject.path
-                    )
-            elif fileObject.fileType == FileType.SDC:
-                with open(fileObject.path, 'r') as constraintsFile:
-                    sdcString += constraintsFile.read()
-                    sdcString += '\n'
-                    log.info(
-                        'Added timing constraints script: ' + fileObject.path
-                    )
+            if fileObject.flow == 'quartus' or fileObject.flow is None:
+                if fileObject.fileType == FileType.TCL:
+                    with open(fileObject.path, 'r') as constraintsFile:
+                        projectFileString += constraintsFile.read()
+                        projectFileString += '\n'
+                        log.info(
+                            'Added supplementary TCL script: ' +
+                            fileObject.path
+                        )
+                elif fileObject.fileType == FileType.SDC:
+                    with open(fileObject.path, 'r') as constraintsFile:
+                        sdcString += constraintsFile.read()
+                        sdcString += '\n'
+                        log.info(
+                            'Added timing constraints script: ' +
+                            fileObject.path
+                        )
         if len(sdcString) > 0:
             sdcPath = os.path.join(workingDirectory, entity + '.sdc')
             with open(sdcPath, 'w') as f:

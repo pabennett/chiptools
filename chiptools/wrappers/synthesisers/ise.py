@@ -152,7 +152,7 @@ class Ise(synthesiser.Synthesiser):
         log.info("...done")
 
     @synthesiser.throws_synthesis_exception
-    def synthesise(self, library, entity):
+    def synthesise(self, library, entity, fpga_part=None):
         """
         Synthesise the target entity in the given library for the currently
         loaded project.
@@ -164,7 +164,7 @@ class Ise(synthesiser.Synthesiser):
           line arguments * Generate reports
         * Archive the outputs of the synthesis flow
         """
-        super(Ise, self).synthesise(library, entity)
+        super(Ise, self).synthesise(library, entity, fpga_part)
         # make a temporary working directory for the synth tool
         import tempfile
 
@@ -197,7 +197,8 @@ class Ise(synthesiser.Synthesiser):
             archiveName = synthName + '.tar'
             synthesisDirectory = os.path.join(workingDirectory, synthName)
             os.makedirs(synthesisDirectory)
-            part = self.project.get_fpga_part()
+            if fpga_part is None:
+                fpga_part = self.project.get_fpga_part()
             generics = self.project.get_generics().items()
             generics = (
                 '{' +
@@ -215,7 +216,7 @@ class Ise(synthesiser.Synthesiser):
                     # Run the flow
                     self.ise_xflow(
                         projectFilePath,
-                        part,
+                        fpga_part,
                         entity,
                         generics,
                         synthesisDirectory,
@@ -234,7 +235,7 @@ class Ise(synthesiser.Synthesiser):
                     # Run the flow
                     self.ise_manual_flow(
                         projectFilePath,
-                        part,
+                        fpga_part,
                         entity,
                         generics,
                         synthesisDirectory,
@@ -605,10 +606,14 @@ class Ise(synthesiser.Synthesiser):
         for fileObject in constraintsFiles:
             # Avoid duplicates
             if fileObject.path not in filesProcessed:
-                # Copy the UCF data into the string var
-                with open(fileObject.path, 'r') as constraintsFile:
-                    constraintsData += constraintsFile.read()
-                    log.info('Added constraints file: ' + fileObject.path)
+                if fileObject.flow == 'ise' or fileObject.flow is None:
+                    if fileObject.fileType == FileType.UCF:
+                        # Copy the UCF data into the string var
+                        with open(fileObject.path, 'r') as constraintsFile:
+                            constraintsData += constraintsFile.read()
+                            log.info(
+                                'Added constraints file: ' + fileObject.path
+                            )
                 filesProcessed.append(fileObject.path)
         # Write the string var to a single file if we have data
         if len(constraintsData) != 0:
