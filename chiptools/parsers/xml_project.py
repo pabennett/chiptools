@@ -46,7 +46,7 @@ class XmlProjectParser:
 
     **<library>**
 
-    The *library* tag encapsulates is used to group all child file tags into
+    The *library* tag is used to group all child file tags into
     the same library. If a file is not associated with a library it will
     default to the *work* library.
 
