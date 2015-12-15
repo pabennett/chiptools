@@ -371,7 +371,7 @@ class Project:
         log.info('Simulating entity ' + entity + ' in library ' + library)
         simulation_tool.simulate(library, entity, **kwargs)
 
-    def synthesise(self, library, entity, tool_name=None):
+    def synthesise(self, library, entity, tool_name=None, fpga_part=None):
         """
         Synthesise the *Project* using the given *library* and *entity* as a
         top level. The synthesis tool that is used is determined by the
@@ -398,7 +398,7 @@ class Project:
                 'Synthesising entity ' + entity + ' in library ' + library
             )
             try:
-                synthesis_tool.synthesise(library, entity)
+                synthesis_tool.synthesise(library, entity, fpga_part)
             except exceptions.SynthesisException:
                 log.error(
                     'Synthesis failed, refer to log for more information.'
