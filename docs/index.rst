@@ -6,7 +6,7 @@ Contents
 
    introduction
    getting_started
-   examples
+   max_hold
    project_format
    
 

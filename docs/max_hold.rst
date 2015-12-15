@@ -1,14 +1,10 @@
-########
-Examples
-########
+.. _max_hold:
 
-The following examples are provided in the ChipTools repository to show you
-how to use the various features of the framework.
+Examples: Max Hold
+==================
 
-Max Hold
-========
-
-The **Max Hold** example is located in **examples/max_hold**.
+A demonstration of the ChipTools framework being used to simulate, test and
+build a simple VHDL component.
 
 Introduction
 ------------
@@ -27,6 +23,8 @@ check responses, create test reports and generate bit files for the
 Source Files
 ------------
 
+The Max Hold example is located in `examples/max_hold <https://github.com/pabennett/chiptools/tree/master/examples/max_hold>`_.
+
 The following source files belong to the Max Hold example:
 
 .. csv-table::
@@ -40,8 +38,8 @@ The following source files belong to the Max Hold example:
    "basic_unit_tests.py", "Python",      "A simple unit test."
    "max_hold.ucf",        "Constraints", "Constraints file when using the ISE synthesis flow."
    "max_hold.xdc",        "Constraints", "Constraints file when using the Vivado synthesis flow."
-   "Simulation",          "Folder",      "Output directory for simulation tasks."
-   "Synthesis",           "Folder",      "Output directory for synthesis tasks."
+   "simulation",          "Folder",      "Output directory for simulation tasks."
+   "synthesis",           "Folder",      "Output directory for synthesis tasks."
  
 Creating the Project
 ---------------------
@@ -238,8 +236,8 @@ using the **load_project** command:
     $ chiptools
     (cmd) load_project max_hold.xml
 
-Testing
--------
+Simulation and  Test
+--------------------
 
 To test the Max Hold component an accompanying VHDL testbench, 
 *tb_max_hold.vhd*, is used to feed the component data from a stimulus input
@@ -430,3 +428,111 @@ test produces the following output:
 
 Plots such as these provide a powerful diagnostic tool when debugging components
 or analysing performance.
+
+Synthesis and Build
+-------------------
+
+.. warning:: The **Max Hold** example is provided to demonstrate the ChipTools
+             build process, do not attempt to use the bitfiles generated from
+             this project on an FPGA as the IO constraints are not fully defined
+             and have not been checked. Using the bitfiles generated from this
+             project may cause damage to your device.
+
+The Max Hold example includes the files necessary for it to be built using the
+Xilinx ISE, Vivado and Quartus synthesis flows; the project files provided
+in the example are configured to use the Vivado synthesis flow by default.
+
+Building with the Command Line Interface
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To build the design using the ChipTools command line, first open a terminal in
+the Max Hold example directory and invoke the ChipTools command line:
+
+.. code-block:: bash
+
+  $ chiptools
+  -------------------------------------------------------------------------------
+  ChipTools (version: 0.1.50)
+
+  Type 'help' to get started.
+  Type 'load_project <path>' to load a project.
+  The current directory contains the following projects:
+          1: max_hold.xml
+          2: max_hold_basic_test.xml
+  -------------------------------------------------------------------------------
+  (cmd)
+
+Two projects should be listed by ChipTools in the current directory, load the 
+**max_hold.xml** project by using the **load_project** command:
+
+.. code-block:: bash
+
+  (Cmd) load_project max_hold.xml
+  [INFO] Loading max_hold.xml in current working directory: max_hold
+  [INFO] Loading project: max_hold.xml
+  [INFO] Parsing: max_hold.xml synthesis=None
+  (Cmd)
+
+We can check which files will be sent to the synthesis tool by using the
+**show_synthesis_fileset** command:
+
+.. code-block:: bash
+
+  (Cmd) show_synthesis_fileset
+  [INFO] Library: lib_max_hold
+  [INFO]          max_hold.vhd
+  [INFO]          pkg_max_hold.vhd
+  [INFO] Library: lib_tb_max_hold
+
+Note that the Max Hold testbench **tb_max_hold.vhd** is excluded from
+synthesis, this is due to the *synthesis='false'* attribute on the testbench
+file tag in the **max_hold.xml** project file.
+
+An FPGA build can be initiated by using the **synthesise** command, which 
+accepts the following arguments:
+
+.. csv-table::
+   :header: "Argument", "Description"
+   :widths: 5, 20
+
+   "target", "The library and entity to synthesise, using the format *library.entity*"
+   "flow", "The synthesis flow to use. The default value is taken from the project config."
+   "part", "The fpga part to use. The default value is taken from the project config."
+
+To build the Max Hold project using the default synthesis flow (Vivado) for the
+default FPGA part (xc7a100tcsg324-1) simply issue the synthesise command
+with the target library and entity:
+
+.. code-block:: bash
+
+  (Cmd) synthesise lib_max_hold.max_hold
+
+To build the Max Hold project using *Altera Quartus*, issue the synthesise
+command with the flow set to 'quartus' and the part set to 'EP3C40F484C6'.
+
+.. code-block:: bash
+
+  (Cmd) synthesise lib_max_hold.max_hold quartus EP3C40F484C6
+
+To build the Max Hold project using *Xilinx ISE*, issue the synthesise
+command with the flow set to 'ise' and the part set to 'xc6slx9-csg324-2'.
+
+.. code-block:: bash
+
+  (Cmd) synthesise lib_max_hold.max_hold ise xc6slx9-csg324-2
+
+While the build is running any messages generated by the synthesis tool will
+be displayed in the ChipTools command line. When the build has completed
+ChipTools will store any build outputs in a timestamped archive in the
+synthesis output directory specified in the project settings:
+
+.. code-block:: bash
+
+  [INFO] Build successful, checking reports for unacceptable messages...
+  [INFO] Synthesis completed, saving output to archive...
+  [INFO] Added: max_hold_synth_151215_134719
+  [INFO] ...done
+  (cmd)
+
+If there is an error during build, ChipTools will store any outputs generated
+by the synthesis tool in a timestamped archive with an 'ERROR' name prefix.
