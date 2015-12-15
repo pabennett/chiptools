@@ -169,7 +169,10 @@ class CommandLine(cmd.Cmd):
         """Synthesise the design using the chosen synthesis tool and report any
         errors Example: (Cmd) simulate my_library.my_entity"""
         command_elems = command.split(' ')
-        if len(command_elems) == 2:
+        fpga_part = None
+        if len(command_elems) == 3:
+            target, tool_name, fpga_part = command_elems
+        elif len(command_elems) == 2:
             target, tool_name = command_elems
         else:
             target = command_elems[0]
@@ -185,7 +188,12 @@ class CommandLine(cmd.Cmd):
             )
             return
 
-        self.project.synthesise(library, entity, tool_name=tool_name)
+        self.project.synthesise(
+            library,
+            entity,
+            tool_name=tool_name,
+            fpga_part=fpga_part
+        )
 
     @wraps_do_commands
     def do_run_preprocessors(self, command):

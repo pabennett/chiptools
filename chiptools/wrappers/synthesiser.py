@@ -57,7 +57,7 @@ class Synthesiser(ToolchainBase):
             user_paths
         )
 
-    def synthesise(self, library, entity):
+    def synthesise(self, library, entity, fpga_part=None):
         """
         Synthesise the target entity in the given library for the currently
         loaded project.
