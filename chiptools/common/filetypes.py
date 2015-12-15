@@ -7,6 +7,7 @@ log = logging.getLogger(__name__)
 
 
 class FileType(Enum):
+    Unknown = 0
     VHDL = 1  # VHDL
     Verilog = 2  # Verilog
     SystemVerilog = 3  # Verilog (SV)
@@ -31,6 +32,7 @@ fileExtensionsLookup = {
     '.xci': FileType.VivadoIp,
     '.xco': FileType.VivadoIp,
     '.xdc': FileType.VivadoXDC,
+    '.ucf': FileType.UCF,
 }
 
 
@@ -169,7 +171,7 @@ class Constraints(object):
     """The constraints object provides a container for constraints files"""
     def __init__(self, **kwargs):
         self.path = kwargs[ProjectAttributes.XML_ATTRIBUTE_PATH]
-        self.fileType = FileType.TCL
+        self.fileType = FileType.Unknown
         self.flow = kwargs.get(ProjectAttributes.XML_ATTRIBUTE_FLOW, None)
         fileName, fileExtension = os.path.splitext(self.path)
         fileExtension = fileExtension.strip(' ')
