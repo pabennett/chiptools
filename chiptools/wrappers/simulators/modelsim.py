@@ -71,7 +71,7 @@ class Modelsim(Simulator):
             if duration <= 0:
                 duration = '-all'
             else:
-                duration = utils.seconds_to_timestring(self.duration)
+                duration = utils.seconds_to_timestring(duration)
             do = 'set NumericStdNoWarnings 1\n' + 'run ' + duration + ';quit'
             arguments += ['-do', '{0}'.format(do)]
         # Finish processing arguments and invoke vsim

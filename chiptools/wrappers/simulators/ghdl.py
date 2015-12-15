@@ -48,7 +48,7 @@ class Ghdl(Simulator):
         if duration is not None:
             if duration > 0:
                 args += [
-                    '--stop-time=' + utils.seconds_to_timestring(self.duration)
+                    '--stop-time=' + utils.seconds_to_timestring(duration)
                 ]
         # Run the simulation
         args += [entity]

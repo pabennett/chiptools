@@ -80,7 +80,7 @@ class Vivado(Simulator):
                     '-generic_top' + ' ' +
                     name.upper() +
                     '\"' + '=' + '\"' +
-                    str(binding)
+                    str(binding) + ' '
                 )
             # Execute XELAB on the design files:
             xelab_args += (' ' + library + '.' + str(entity))
@@ -94,7 +94,7 @@ class Vivado(Simulator):
             for name, binding in generics.items():
                 xelab_args += [
                     '-generic_top',
-                    name.upper() + '=' + str(binding),
+                    name.upper() + '=' + str(binding) + ' ' ,
                 ]
             # Execute XELAB on the design files:
             xelab_args += [library + '.' + str(entity)]
@@ -117,8 +117,15 @@ class Vivado(Simulator):
                 if duration <= 0:
                     duration = 'all'
                 else:
-                    duration = utils.seconds_to_timestring(self.duration)
-                f.write('run {0}\n'.format(duration))
+                    duration = utils.seconds_to_timestring(duration)
+                f.write(
+                    (
+                        'if { [catch {%(command)s} result] } {\n' +
+                        '   puts stderr \"Command failed: $result\"\n' +
+                        '   exit 1\n' +
+                        '}\n'
+                    ) % dict(command='run {0}\n'.format(duration))
+                )
                 f.write('exit\n')
         sim_args += ['-tclbatch', self.sim_tcl_name]
         # Path to snapshot to execute

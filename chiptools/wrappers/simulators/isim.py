@@ -80,7 +80,7 @@ class Isim(Simulator):
                 if duration <= 0:
                     duration = 'all'
                 else:
-                    duration = utils.seconds_to_timestring(self.duration)
+                    duration = utils.seconds_to_timestring(duration)
                 f.write('run {0}\n'.format(duration))
                 f.write('exit\n')
         sim_args += ['-tclbatch', self.sim_tcl_name]
