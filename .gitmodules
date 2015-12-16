@@ -1,0 +1,3 @@
+[submodule "examples/uart"]
+	path = examples/uart
+	url = https://github.com/pabennett/uart
