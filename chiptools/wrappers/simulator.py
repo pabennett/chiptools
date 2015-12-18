@@ -72,6 +72,8 @@ class Simulator(ToolchainBase):
 
     def compile_project(self, includes={}):
         self.libraries.update(includes)
+        for libname, path in includes.items():
+            self.set_library_path(libname, path)
         # Load the cache
         cache = self.project.cache
         # Compile the project
