@@ -49,11 +49,11 @@ If you prefer to explicitly point ChipTools to a specific program you can edit
 the *.chiptoolsconfig* file which is automatically created by ChipTools in your
 HOME directory.
 
-The .chiptoolsconfig file uses *INI* format and contains three sections:
+The .chiptoolsconfig file uses *INI* format and contains the following:
 
     * **[simulation executables]** Paths to simulation tools
     * **[synthesis executables]** Paths to synthesis tools
-    * **[simulation dependencies]** Paths to precompiled libraries to be passed to the chosen simulator when simulating a design.
+    * **[<toolname> simulation libraries]** Paths to precompiled libraries for the given *<toolname>*
 
 An example .chiptoolsconfig is given below:
 
@@ -66,7 +66,7 @@ An example .chiptoolsconfig is given below:
     ise             = C:\Xilinx\14.7\ISE_DS\ISE\bin\nt\
     quartus         = C:\altera\13.1\quartus\bin\
 
-    [simulation dependencies]
+    [modelsim simulation libraries]
     unisim          = C:\modelsim_dlx_10.3d\unisim
     xilinxcorelib   = C:\Xilinx\modelsim_10_3de_simlibs\xilinxcorelib
     unimacro        = C:\Xilinx\modelsim_10_3de_simlibs\unimacro

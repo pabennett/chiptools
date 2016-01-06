@@ -90,9 +90,6 @@ class Project:
             unpacked_testsuite = testloader.load_tests(
                 path,
                 self.get_simulation_directory(),
-                simulation_libraries=(
-                    self.options.get_simulator_library_dependencies()
-                )
             )
             # Modify the file object, replacing the testsuite path
             # string with the testsuite object that we just
@@ -265,13 +262,14 @@ class Project:
         """
         return self.tool_wrapper.synthesisers
 
-    def get_simulator_library_dependencies(self):
+    def get_simulator_library_dependencies(self, tool_name):
         """
         Return a dictionary of library_name : path where both are strings and
         the *library_name* defines a simulation library dependency name and
-        *path* provides the path to the dependency.
+        *path* provides the path to the dependency. Simulation libraries for
+        the given simulation tool name are returned.
         """
-        return self.options.get_simulator_library_dependencies()
+        return self.options.get_simulator_library_dependencies(tool_name)
 
     def get_system_config_path(self):
         """
@@ -313,7 +311,10 @@ class Project:
         *tool_name* input if supplied, otherwise the *Project* configuration
         : 'simulator' tool name will be used instead.
         """
-        simulation_tool = self.tool_wrapper.get_tool(tool_type='simulation')
+        simulation_tool = self.tool_wrapper.get_tool(
+            tool_type='simulation',
+            tool_name=tool_name
+        )
         if simulation_tool is None or not simulation_tool.installed:
             name = None if simulation_tool is None else simulation_tool.name
             log.error(
@@ -324,7 +325,9 @@ class Project:
             return
         try:
             simulation_tool.compile_project(
-                includes=self.options.get_simulator_library_dependencies()
+                includes=self.options.get_simulator_library_dependencies(
+                    tool_name
+                )
             )
         except:
             log.error(traceback.format_exc())
@@ -350,17 +353,17 @@ class Project:
                 )
             )
             return
+        includes = self.options.get_simulator_library_dependencies(tool_name)
         # Do a compilation of the design to ensure the libraries are up to date
         try:
             simulation_tool.compile_project(
-                includes=self.options.get_simulator_library_dependencies()
+                includes=includes
             )
         except:
             log.error(traceback.format_exc())
             log.error("Compilation aborted due to previous error")
             return False
 
-        includes = self.options.get_simulator_library_dependencies()
         includes.update(kwargs.get('includes', {}))
         kwargs.update(
             {
@@ -442,7 +445,9 @@ class Project:
         # First compile the project
         try:
             simulation_tool.compile_project(
-                includes=self.options.get_simulator_library_dependencies()
+                includes=self.options.get_simulator_library_dependencies(
+                    tool_name
+                )
             )
         except:
             log.error(traceback.format_exc())
@@ -458,7 +463,9 @@ class Project:
                 for testId, test in enumerate(test_group):
                     # Patch in the simulation runtime data
                     test.postImport(
-                        self.options.get_simulator_library_dependencies(),
+                        self.options.get_simulator_library_dependencies(
+                            tool_name
+                        ),
                         self.get_simulation_directory(),
                         simulation_tool,
                     )

@@ -112,7 +112,6 @@ class ChipToolsTest(unittest.TestCase):
 def load_tests(
     path,
     simulation_path,
-    simulation_libraries={}
 ):
     """Import the test shim python module given by path and return a
     collection of Unittest classes for each of the tests found in the shim"""

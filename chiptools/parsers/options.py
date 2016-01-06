@@ -7,7 +7,7 @@ configuration settings with error checking and file-modification checking.
 The path to the system configuration file is hard-coded into options_path.
 """
 
-import configparser as config
+import configparser
 import os
 import logging
 import traceback
@@ -37,7 +37,13 @@ class Options:
     """
 
     CONFIG_DEFAULTS = OrderedDict([
-        ('simulation dependencies', OrderedDict([
+        ('modelsim simulation libraries', OrderedDict([
+        ])),
+        ('vivado simulation libraries', OrderedDict([
+        ])),
+        ('isim simulation libraries', OrderedDict([
+        ])),
+        ('ghdl simulation libraries', OrderedDict([
         ])),
         ('simulation executables', OrderedDict([
 
@@ -56,11 +62,11 @@ class Options:
         """
         self.synthesisers = {}
         self.simulators = {}
-        self.simulatorLibraryDependencies = {}
+        self.simulator_libraries = {}
         super(Options, self).__init__()
         self.options_md5 = None
         log.debug('Initialising options parser')
-        self._options = config.RawConfigParser()
+        self._options = configparser.ConfigParser()
         self.startup()
 
     def startup(self):
@@ -87,12 +93,8 @@ class Options:
                 'simulation executables',
                 transform=lambda x: os.path.expandvars(x),
             )
-            self.simulatorLibraryDependencies = Options.readOptionsPaths(
-                self._options,
-                'simulation dependencies'
-            )
             log.debug('...done loading options file')
-        except (config.ParsingError):
+        except (configparser.ParsingError):
             log.error(
                 'The Options file is badly formatted, ' +
                 'parsing failed with the ' +
@@ -130,8 +132,12 @@ class Options:
         try:
             for key, value in options.items(section):
                 result[key] = transform(value)
-        except config.NoSectionError:
-            pass
+        except configparser.NoSectionError:
+            log.warning(
+                'Could not find section: {0} in .chiptoolsconfig'.format(
+                    section
+                )
+            )
         return result
 
     def refresh(self):
@@ -177,22 +183,22 @@ class Options:
         ret.update(self.simulators)
         return ret
 
-    def get_synthesis_tool_path(self, toolName):
+    def get_synthesis_tool_path(self, toolname):
         """
-        Return the executable path for the given simulator name 'toolName'.
+        Return the executable path for the given simulator name 'toolname'.
 
-        If no path is found for 'toolName' NoneType will be returned.
+        If no path is found for 'toolname' NoneType will be returned.
 
         If the configuration file was modified since the last access it will be
         reloaded and the new entries returned.
         """
         self.refresh()
-        if toolName in self.synthesisers:
-            return self.synthesisers[toolName]
-        log.error('Unknown synthesis tool: ' + toolName)
+        if toolname in self.synthesisers:
+            return self.synthesisers[toolname]
+        log.error('Unknown synthesis tool: ' + toolname)
         return None
 
-    def get_simulator_library_dependencies(self):
+    def get_simulator_library_dependencies(self, toolname):
         """
         Return the simulator library dependencies.
 
@@ -200,4 +206,16 @@ class Options:
         reloaded and the new entries returned.
         """
         self.refresh()
-        return self.simulatorLibraryDependencies
+        section_name = '{0} simulation libraries'.format(toolname)
+        paths = {}
+        if self._options.has_section(section_name):
+            paths = Options.readOptionsPaths(
+                self._options,
+                section_name,
+                transform=lambda x: os.path.expandvars(x)
+            )
+        else:
+            log.debug(
+                'Could not find .chiptoolsconfig section: ' + str(section_name)
+            )
+        return paths

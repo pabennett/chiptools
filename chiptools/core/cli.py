@@ -305,7 +305,22 @@ class CommandLine(cmd.Cmd):
                 ][inst.installed] +
                 '\n'
             ).format(name, inst.path)
-
+        simulation_libraries_string = ''
+        for name in self.project.get_available_simulators().keys():
+            libraries = self.project.get_simulator_library_dependencies(name)
+            if len(libraries.keys()) > 0:
+                simulation_libraries_string += (
+                    term.darkgray(
+                        SEP + name.capitalize() + ' ' +
+                        'Simulation libraries:\n'
+                    )
+                )
+            for libname, path in libraries.items():
+                simulation_libraries_string += (
+                    (
+                        SEP * 2 + '{:<15}: ' + term.green('{:<35}') + '\n'
+                    ).format(libname, path)
+                )
         msg = (
             '\n' +
             term.yellow(term.bold('System Configuration: ')) +
@@ -316,15 +331,7 @@ class CommandLine(cmd.Cmd):
             available_simulator_string +
             term.darkgray(SEP + 'Available synthesisers:\n') +
             available_synthesiser_string +
-            term.darkgray(SEP + 'Simulation libraries:\n') +
-            ''.join(
-                (SEP * 2 + '{:<15}: ' + term.green('{:<35}') + '\n').format(
-                    k,
-                    v
-                ) for k, v in (
-                    self.project.get_simulator_library_dependencies().items()
-                )
-            ) +
+            simulation_libraries_string +
             '\n' +
             term.yellow(term.bold('Project Configuration: ')) +
             term.green('%(project)s') + '\n' +
@@ -339,9 +346,7 @@ class CommandLine(cmd.Cmd):
             term.darkgray(SEP + 'Targeting FPGA part:\n') +
             SEP * 2 + term.green('%(fpga_part)s') + '\n' +
             term.darkgray(SEP + 'Using synthesis generic binding:\n') +
-            SEP * 2 + term.green('%(synthesis_generics)s') + '\n' +
-            term.darkgray(SEP + 'Modelsim Specific Arguments:\n') +
-            SEP * 2 + 'vsim: ' + term.green('%(modelsim_vsim_args)s') + '\n'
+            SEP * 2 + term.green('%(synthesis_generics)s') + '\n'
         )
 
         print(msg % dict(
