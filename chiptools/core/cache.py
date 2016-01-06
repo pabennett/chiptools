@@ -134,7 +134,7 @@ class FileCache:
         Return the local cache dictionary library name set.
         """
         if tool_name in self.cache:
-            return self.cache[tool_name][self.field_id_libraries]
+            return self.cache[tool_name].get(self.field_id_libraries, set())
         return set()
 
     def get_tool_names(self):
