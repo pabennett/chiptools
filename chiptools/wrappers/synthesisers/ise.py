@@ -310,8 +310,14 @@ class Ise(synthesiser.Synthesiser):
         # Get additional tool arguments for this flow stage
         args = self.project.get_tool_arguments(self.name, 'promgen')
         args = shlex.split(['', args][args is not None])
-        args += ['-o', fout, '-u', '0', fin]
-
+        # Allow the user to override PROM loading of bitfiles
+        args += ['-o', fout]
+        if not any([k in args for k in ['-r', '-u', '-d', '-ver']]):
+            # Default to upward loading from address 0
+            args += ['-u', '0', fin]
+        else:
+            # User provided custom PROM loading argument which we will honour
+            pass
         Ise._call(self.promgen, args, cwd=working_directory, quiet=False)
 
     @synthesiser.throws_synthesis_exception
