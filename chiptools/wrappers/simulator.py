@@ -134,13 +134,12 @@ class Simulator(ToolchainBase):
                         # Compile the source
                         self.compile(file_object, cwd=cwd)
                     else:
-                        log.error(
+                        raise FileNotFoundError(
                             'File could not be found: ' +
                             '{0}, operation aborted.'.format(
                                 file_object.path
                             )
                         )
-                        return
             except:
                 # Clear the SHA1 for the file that failed so it will recompile
                 # next time
