@@ -374,7 +374,7 @@ class Ise(synthesiser.Synthesiser):
         args = self.project.get_tool_arguments(self.name, 'map')
         args = shlex.split(['', args][args is not None])
         # Part name
-        args = ['-p', part]
+        args += ['-p', part]
         # Output file
         args += ['-o', entity + '_map.ncd']
         args += [entity + '.ngd']
@@ -409,7 +409,7 @@ class Ise(synthesiser.Synthesiser):
         args = self.project.get_tool_arguments(self.name, 'par')
         args = shlex.split(['', args][args is not None])
         # Infile
-        args = [entity + '_map.ncd']
+        args += [entity + '_map.ncd']
         # Output file
         args += [entity + '.ncd']
         # Physical Constraints File (auto generated)
@@ -443,7 +443,7 @@ class Ise(synthesiser.Synthesiser):
         args = self.project.get_tool_arguments(self.name, 'ngdbuild')
         args = shlex.split(['', args][args is not None])
         # Constraints
-        args = ['-uc', entity + '.ucf']
+        args += ['-uc', entity + '.ucf']
         # Search directory
         args += ['-sd', working_directory]
         # Part name
@@ -478,7 +478,7 @@ class Ise(synthesiser.Synthesiser):
         args = self.project.get_tool_arguments(self.name, 'bitgen')
         args = shlex.split(['', args][args is not None])
         # Input file
-        args = [entity + '.ncd']
+        args += [entity + '.ncd']
         # Output file
         args += [entity + '.bit']
 
