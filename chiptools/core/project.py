@@ -51,6 +51,8 @@ class Project:
     def add_file(self, path, library='work', **attribs):
         """Add the given file to the project."""
         path = utils.relativePathToAbs(path, self.root)
+        # Ensure library names are lower case
+        library = library.lower()
         # Default synthesis to true
         file_object = File(
             path=path,
