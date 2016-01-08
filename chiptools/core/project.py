@@ -311,27 +311,29 @@ class Project:
         *tool_name* input if supplied, otherwise the *Project* configuration
         : 'simulator' tool name will be used instead.
         """
-        simulation_tool = self.tool_wrapper.get_tool(
-            tool_type='simulation',
+        simulation_tool = self._get_tool(tool_name, tool_type='simulation')
+        simulation_tool.compile_project(
+            includes=self.options.get_simulator_library_dependencies(
+                simulation_tool.name
+            )
+        )
+
+    def _get_tool(self, tool_name=None, tool_type='simulation'):
+        tool = self.tool_wrapper.get_tool(
+            tool_type=tool_type,
             tool_name=tool_name
         )
-        if simulation_tool is None or not simulation_tool.installed:
-            name = None if simulation_tool is None else simulation_tool.name
-            log.error(
-                "Compilation aborted, {0} is not available.".format(
-                    name
+        if tool is None:
+            raise EnvironmentError(
+                "Operation aborted, no {0} tool is available".format(tool_type)
+            )
+        if not tool.installed:
+            raise EnvironmentError(
+                "Operation aborted, {0} is not available.".format(
+                    tool.name
                 )
             )
-            return
-        try:
-            simulation_tool.compile_project(
-                includes=self.options.get_simulator_library_dependencies(
-                    tool_name
-                )
-            )
-        except:
-            log.error(traceback.format_exc())
-            log.error("Compilation aborted due to previous error.")
+        return tool
 
     def simulate(self, library, entity, tool_name=None, **kwargs):
         """
@@ -341,19 +343,10 @@ class Project:
         : 'simulator' tool name will be used instead.
         """
 
-        simulation_tool = self.tool_wrapper.get_tool(
-            tool_type='simulation',
-            tool_name=tool_name
+        simulation_tool = self._get_tool(tool_name, tool_type='simulation')
+        includes = self.options.get_simulator_library_dependencies(
+            simulation_tool.name
         )
-        if simulation_tool is None or not simulation_tool.installed:
-            name = None if simulation_tool is None else simulation_tool.name
-            log.error(
-                "Compilation aborted, {0} is not available.".format(
-                    name
-                )
-            )
-            return
-        includes = self.options.get_simulator_library_dependencies(tool_name)
         # Do a compilation of the design to ensure the libraries are up to date
         try:
             simulation_tool.compile_project(
@@ -385,18 +378,7 @@ class Project:
         self.run_preprocessors()
 
         try:
-            synthesis_tool = self.tool_wrapper.get_tool(
-                tool_type='synthesis',
-                tool_name=tool_name
-            )
-            if synthesis_tool is None or not synthesis_tool.installed:
-                name = None if synthesis_tool is None else synthesis_tool.name
-                log.error(
-                    "Synthesis aborted, {0} is not available.".format(
-                        name
-                    )
-                )
-                return
+            synthesis_tool = self._get_tool(tool_name, tool_type='synthesis')
             log.info(
                 'Synthesising entity ' + entity + ' in library ' + library
             )
@@ -430,23 +412,12 @@ class Project:
         *tool_name* input if supplied, otherwise the *Project* configuration
         : 'simulator' tool name will be used instead.
         """
-        simulation_tool = self.tool_wrapper.get_tool(
-            tool_type='simulation',
-            tool_name=tool_name
-        )
-        if simulation_tool is None or not simulation_tool.installed:
-            name = None if simulation_tool is None else simulation_tool.name
-            log.error(
-                "Compilation aborted, {0} is not available.".format(
-                    name
-                )
-            )
-            return
+        simulation_tool = self._get_tool(tool_name, tool_type='simulation')
         # First compile the project
         try:
             simulation_tool.compile_project(
                 includes=self.options.get_simulator_library_dependencies(
-                    tool_name
+                    simulation_tool.name
                 )
             )
         except:
@@ -464,7 +435,7 @@ class Project:
                     # Patch in the simulation runtime data
                     test.postImport(
                         self.options.get_simulator_library_dependencies(
-                            tool_name
+                            simulation_tool.name
                         ),
                         self.get_simulation_directory(),
                         simulation_tool,
