@@ -131,13 +131,14 @@ class ToolWrapper:
                 tool_name = self.project.get_simulation_tool_name()
             tool = self.simulators.get(tool_name, None)
         else:
-            log.error(
-                'Invalid tool type specified: {0}'.format(tool_type) +
-                ' Use one of [simulation, synthesis]'
+            raise ValueError(
+                "Unsupported tool_type: {0} specified.".format(
+                    tool_type
+                )
             )
-            tool = None
         if tool is None:
             log.error(
                 'No wrapper exists for the tool: ' + str(tool_name)
             )
+            return
         return tool
