@@ -68,10 +68,10 @@ class CommandLine(cmd.Cmd):
                         ) for idx, path in enumerate(projects)),
                         fg='yellow'
                     )
-                    self.intro = INTRO_TEMPL % dict(
-                        version=_version.__version__,
-                        projects=prj,
-                    )
+                self.intro = INTRO_TEMPL % dict(
+                    version=_version.__version__,
+                    projects=prj,
+                )
             except exceptions.ProjectFileException:
                 log.error(
                     'The project file contains errors, ' +
