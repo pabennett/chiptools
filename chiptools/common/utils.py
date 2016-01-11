@@ -12,6 +12,18 @@ else:
 log = logging.getLogger(__name__)
 
 
+def iterate_tests(test_suite_or_case):
+    """Iterate through all of the test cases in 'test_suite_or_case'."""
+    try:
+        suite = iter(test_suite_or_case)
+    except TypeError:
+        yield test_suite_or_case
+    else:
+        for test in suite:
+            for subtest in iterate_tests(test):
+                yield subtest
+
+
 def getDateString():
     return time.strftime('%d, %b %y at %H:%M:%S')
 
