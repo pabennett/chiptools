@@ -122,7 +122,7 @@ class CommandLine(cmd.Cmd):
                         projects.append(filePath)
                 except:
                     pass
-        logging.getLogger("chiptools").setLevel(logging.INFO)
+        logging.getLogger("chiptools").setLevel(logging.DEBUG)
         return projects
 
     @wraps_do_commands
@@ -384,7 +384,7 @@ class CommandLine(cmd.Cmd):
             file_name = os.path.basename(file_object.path)
             print(term.yellow(file_name))
             for test_group in file_object.testsuite:
-                for testId, test in enumerate(test_group):
+                for testId, test in enumerate(utils.iterate_tests(test_group)):
                     if testId == 0:
                         print(
                             SEP + term.green(str(test.__class__.__name__))
@@ -421,7 +421,7 @@ class CommandLine(cmd.Cmd):
             file_name = os.path.basename(file_object.path)
             print(term.yellow(file_name))
             for test_group in file_object.testsuite:
-                for testId, test in enumerate(test_group):
+                for testId, test in enumerate(utils.iterate_tests(test_group)):
                     if testId == 0:
                         groupName = str(test.__class__.__name__)
                     testName = test.id().split('.')[-1]

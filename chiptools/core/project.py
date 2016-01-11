@@ -396,7 +396,7 @@ class Project:
 
     def get_tests(self):
         """
-        Return a list of TestSuite objects.
+        Return a list of files implementing TestSuite objects.
         """
         files_with_tests = list(
             filter(lambda x: x.testsuite, self.tests)
@@ -433,7 +433,7 @@ class Project:
         for file_object in self.get_tests():
             file_name = os.path.basename(file_object.path)
             for test_group in file_object.testsuite:
-                for testId, test in enumerate(test_group):
+                for testId, test in enumerate(utils.iterate_tests(test_group)):
                     # Patch in the simulation runtime data
                     test.postImport(
                         self.options.get_simulator_library_dependencies(
