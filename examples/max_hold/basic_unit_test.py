@@ -1,19 +1,11 @@
-
 import os
 import random
 import logging
-import re
-import math
 
 try:
     import matplotlib.pyplot as plt
 except ImportError:
     plt = None
-try:
-    import seaborn
-except ImportError:
-    # We dont care if seaborn isn't installed - it just makes plots prettier.
-    pass
 
 # Import the ChipTools base test class, our test classes should be derived from
 # the ChipToolsTest class (which is derived from unittest.TestCase)
@@ -37,10 +29,7 @@ class MaxHoldsTestBase(ChipToolsTest):
     # Specify the library that this Test should target
     library = 'lib_tb_max_hold'
 
-    def simulationSetUp(self):
-        """The ChipTools test framework will call the simulationSetup method
-        prior to executing the simulator. Place any code that is required to
-        prepare simulator inputs in this method."""
+    def setUp(self):
 
         # Generate a list of 10 random integers
         self.values = [random.randint(0, 2**32-1) for i in range(10)]
@@ -54,16 +43,21 @@ class MaxHoldsTestBase(ChipToolsTest):
                 f.write(
                     '{0} {1}\n'.format(
                         '0001',  # write instruction opcode
-                        bin(value)[2:].zfill(32), # write 32bit data
+                        bin(value)[2:].zfill(32),  # write 32bit data
                     )
                 )
 
     def test_output(self):
         """Check that the Max Hold component correctly locates the maximum
         value."""
+        # Run the simulation
+        return_code, stdout, stderr = self.simulate()
 
         # Get the path to the testbench input file.
-        simulator_output_path = os.path.join(self.simulation_root, 'output.txt')
+        simulator_output_path = os.path.join(
+            self.simulation_root,
+            'output.txt'
+        )
 
         output_values = []
         with open(simulator_output_path, 'r') as f:
