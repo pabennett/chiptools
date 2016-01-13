@@ -186,7 +186,7 @@ class Project:
     def get_tool_arguments(self, tool_name, flow_name):
         """
         Return the optional tool arguments attached to this file for the given
-        toolname and flowname. If the tool or flow are not present in the
+        tool_name and flow_name. If the tool or flow are not present in the
         optional arguments then return an empty string. Multiple spaces in the
         tool argument string are merged into a single space.
         """
@@ -195,6 +195,19 @@ class Project:
             ' ',
             self.config.get(
                 'args_{0}_{1}'.format(tool_name, flow_name), ''
+            )
+        )
+
+    def get_all_tool_argument_keys(self, tool_name):
+        """
+        Return all optional tool argument keys attached to this file for the
+        given tool_name. The list returned by this method can be used to
+        determine which tool arguments are available for the tool_name.
+        """
+        return list(
+            filter(
+                lambda x: x.startswith('args_{0}'.format(tool_name)),
+                list(self.config.keys())
             )
         )
 
