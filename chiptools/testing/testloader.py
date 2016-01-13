@@ -59,18 +59,6 @@ class ChipToolsTest(unittest.TestCase):
         self.simulation_root = simulation_path
         self.simulator = simulation_tool
 
-    def simulationSetUp(self):
-        """The ChipTools test framework will call the simulationSetup method
-        prior to executing the simulator. Place any code that is required to
-        prepare simulator inputs in this method."""
-        pass
-
-    def simulationTearDown(self):
-        """The ChipTools test framework will call the simulationTearDown method
-        after completing the tests. Insert any cleanup code to remove generated
-        files in this method."""
-        pass
-
     def setUp(self):
         # Run user setup first
         self.simulationSetUp()
@@ -92,6 +80,7 @@ class ChipToolsTest(unittest.TestCase):
             )
             return
 
+    def simulate(self):
         ret_val, stdout, stderr = self.simulator.simulate(
             library=self.library,
             entity=self.entity,
@@ -100,13 +89,7 @@ class ChipToolsTest(unittest.TestCase):
             generics=self.generics,
             gui=False
         )
-        self.sim_ret_val = ret_val
-        self.sim_stdout = stdout
-        self.sim_stderr = stderr
-
-    def tearDown(self):
-        # Run user teardown
-        self.simulationTearDown()
+        return (ret_val, stdout, stderr)
 
 
 def load_tests(
