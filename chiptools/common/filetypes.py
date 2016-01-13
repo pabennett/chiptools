@@ -62,17 +62,6 @@ class ProjectAttributes:
     ATTRIBUTE_SYNTH_TOOL = 'synthesiser'
     ATTRIBUTE_SYNTH_PART = 'part'
     ATTRIBUTE_REPORTER = 'reporter'
-    # Additional tool-specific arguments can be attached to a config object in
-    # the XML file to allow fine tweaking of the simulation or synthesis flows.
-    ATTRIBUTE_MODELSIM_SIMULATE = 'args_modelsim_simulate'
-    ATTRIBUTE_MODELSIM_COMPILE = 'args_modelsim_compile'
-    ATTRIBUTE_ISE_MAP = 'args_ise_map'
-    ATTRIBUTE_ISE_PAR = 'args_ise_par'
-    ATTRIBUTE_ISE_XST = 'args_ise_xst'
-    ATTRIBUTE_ISE_PROMGEN = 'args_ise_promgen'
-    ATTRIBUTE_ISE_NGDBUILD = 'args_ise_ndgbuild'
-    ATTRIBUTE_ISE_BITGEN = 'args_ise_bitgen'
-    ATTRIBUTE_ISE_XFLOW = 'args_ise_xflow'
 
     # Additional tool arguments can be attached to File objects by supplying
     # attributes using the naming convention:
