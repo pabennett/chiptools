@@ -38,7 +38,7 @@ def getGitVersion():
         )
         return
     major = matchVal(re.search('v(\\d+)\\.', version))
-    minor = matchVal(re.search('v\\d+\\.(\\d+)-', version))
+    minor = matchVal(re.search('v\\d+\\.(\\d+)', version))
     commit = matchVal(re.search('v\\d+\\.\\d+-(\\d+)-', version))
     with open(VERSION_PY_PATH, 'w') as f:
         f.write(
