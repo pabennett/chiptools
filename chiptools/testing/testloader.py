@@ -71,12 +71,11 @@ class ChipToolsTest(unittest.TestCase):
 
         if self.simulator is None or not self.simulator.installed:
             name = None if self.simulator is None else self.simulator.name
-            self.skip(
+            raise EnvironmentError(
                 "Test aborted, {0} is not available.".format(
                     name
                 )
             )
-            return
 
         ret_val, stdout, stderr = self.simulator.simulate(
             library=self.library,
