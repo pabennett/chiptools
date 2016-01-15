@@ -59,9 +59,7 @@ class ChipToolsTest(unittest.TestCase):
         self.simulation_root = simulation_path
         self.simulator = simulation_tool
 
-    def setUp(self):
-        # Run user setup first
-        self.simulationSetUp()
+    def simulate(self):
 
         # Simulate the testbench
         if len(self.generics.keys()) == 0:
@@ -80,7 +78,6 @@ class ChipToolsTest(unittest.TestCase):
             )
             return
 
-    def simulate(self):
         ret_val, stdout, stderr = self.simulator.simulate(
             library=self.library,
             entity=self.entity,
