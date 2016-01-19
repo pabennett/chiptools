@@ -23,12 +23,13 @@ Clone the ChipTools repository to your system (or `download it here <https://git
 
 .. code-block:: bash
 
-    $ git clone https://github.com/pabennett/chiptools.git
+    $ git clone --recursive https://github.com/pabennett/chiptools.git
 
 Install using the setup.py script provided in the root directory:
 
 .. code-block:: bash
 
+    $ cd chiptools
     $ python setup.py install
 
 After installation, the ChipTools command line interface can be started with:
