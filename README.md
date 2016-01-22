@@ -53,6 +53,7 @@ will be added in the future.
 * Modelsim (tested with 10.3)
 * ISIM (tested with 14.7)
 * GHDL (tested with 0.31)
+* Vivado (tested with 2015.4)
 
 ### Synthesis Tools
 
