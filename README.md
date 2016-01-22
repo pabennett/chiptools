@@ -27,7 +27,7 @@ providing a consistent interface to vendor applications and automating simulatio
   # Start the ChipTools command line interface
   $ chiptools
 ```
-Refer to the [documentation](http://chiptools.readthedocs.org/en/latest/examples.html) for examples on using ChipTools to simulate and build FPGA designs.
+Refer to the [documentation](http://chiptools.readthedocs.org/en/latest/max_hold.html) for examples on using ChipTools to simulate and build FPGA designs.
 
 ## Supported Tools
 
