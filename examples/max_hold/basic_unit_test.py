@@ -30,15 +30,25 @@ class MaxHoldsTestBase(ChipToolsTest):
     library = 'lib_tb_max_hold'
 
     def setUp(self):
+        """Place any code that is required to prepare simulator inputs in this
+        method."""
+        # Set the paths for the input and output files using the
+        # 'simulation_root' attribute as the working directory
+        self.input_path = os.path.join(self.simulation_root, 'input.txt')
+        self.output_path = os.path.join(self.simulation_root, 'output.txt')
 
-        # Generate a list of 10 random integers
-        self.values = [random.randint(0, 2**32-1) for i in range(10)]
+    def tearDown(self):
+        """Insert any cleanup code to remove generated files in this method."""
+        os.remove(self.input_path)
+        os.remove(self.output_path)
 
-        # Get the path to the testbench input file.
-        simulator_input_path = os.path.join(self.simulation_root, 'input.txt')
+    def run_random_data_test(self, n):
+
+        # Generate a list of n random integers
+        self.values = [random.randint(0, 2**32-1) for i in range(n)]
 
         # Write the values to the testbench input file
-        with open(simulator_input_path, 'w') as f:
+        with open(self.input_path, 'w') as f:
             for value in self.values:
                 f.write(
                     '{0} {1}\n'.format(
@@ -47,29 +57,30 @@ class MaxHoldsTestBase(ChipToolsTest):
                     )
                 )
 
-    def test_output(self):
-        """Check that the Max Hold component correctly locates the maximum
-        value."""
         # Run the simulation
         return_code, stdout, stderr = self.simulate()
+        self.assertEqual(return_code, 0)
 
-        # Get the path to the testbench input file.
-        simulator_output_path = os.path.join(
-            self.simulation_root,
-            'output.txt'
-        )
-
+        # Read the simulation output
         output_values = []
-        with open(simulator_output_path, 'r') as f:
+        with open(self.output_path, 'r') as f:
             data = f.readlines()
         for valueIdx, value in enumerate(data):
             # testbench response
             output_values.append(int(value, 2))  # Binary to integer
 
-        # Use Python to work out the expected result
+        # Use Python to work out the expected result from the original imput
         max_hold = [
             max(self.values[:i+1]) for i in range(len(self.values))
         ]
 
         # Compare the expected result to what the Testbench returned:
         self.assertListEqual(output_values, max_hold)
+
+    def test_10_random_integers(self):
+        """Check the Max hold component using 10 random integers."""
+        self.run_random_data_test(10)
+
+    def test_100_random_integers(self):
+        """Check the Max hold component using 100 random integers."""
+        self.run_random_data_test(100)
