@@ -15,6 +15,7 @@ from chiptools.core.preprocessor import Preprocessor
 from chiptools.core import reporter
 from chiptools.core.cache import FileCache
 from chiptools.parsers import options
+from chiptools.parsers import xml_project
 from chiptools.testing import testloader
 from chiptools.testing.custom_runners import HTMLTestRunner
 from chiptools.wrappers.wrapper import ToolWrapper
@@ -42,6 +43,11 @@ class Project:
         self.file_list = []
         self.project_data = {}
         self.tests = []
+
+    def load_project(self, path):
+        """Initialise this project instance using the project file supplied
+        by path."""
+        xml_project.XmlProjectParser.load_project(path, self)
 
     def set_cache_path(self, cache_path):
         # Update the FileCache to point at the new path
