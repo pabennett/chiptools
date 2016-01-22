@@ -14,7 +14,6 @@ testroot = os.path.dirname(__file__) or '.'
 sys.path.insert(0, os.path.abspath(os.path.join(testroot, os.path.pardir)))
 
 from chiptools.core.project import Project
-from chiptools.parsers.xml_project import XmlProjectParser
 from chiptools.core.cli import CommandLine
 
 # Blackhole log messages from chiptools
@@ -189,7 +188,7 @@ def process(data, path):
 class TestXmlProjectLoading(TestProjectInterface):
     def testSynthesisDirectory(self):
         project = Project()
-        XmlProjectParser.load_project(self.project_path, project)
+        project.load_project(self.project_path)
         abs_path = os.path.join(
             os.path.abspath(self.root),
             self.synthesis_directory
@@ -198,7 +197,7 @@ class TestXmlProjectLoading(TestProjectInterface):
 
     def testSimulationDirectory(self):
         project = Project()
-        XmlProjectParser.load_project(self.project_path, project)
+        project.load_project(self.project_path)
         abs_path = os.path.join(
             os.path.abspath(self.root),
             self.simulation_directory
@@ -207,11 +206,11 @@ class TestXmlProjectLoading(TestProjectInterface):
 
     def testProjectLoad(self):
         project = Project()
-        XmlProjectParser.load_project(self.project_path, project)
+        project.load_project(self.project_path)
 
     def testProjectPart(self):
         project = Project()
-        XmlProjectParser.load_project(self.project_path, project)
+        project.load_project(self.project_path)
         # Check project part
         self.assertEqual(
             self.project_part,
@@ -220,7 +219,7 @@ class TestXmlProjectLoading(TestProjectInterface):
 
     def testSimulationToolName(self):
         project = Project()
-        XmlProjectParser.load_project(self.project_path, project)
+        project.load_project(self.project_path)
         # Check simulation tool name
         self.assertEqual(
             self.simulation_tool_name,
@@ -229,7 +228,7 @@ class TestXmlProjectLoading(TestProjectInterface):
 
     def testSynthesisToolName(self):
         project = Project()
-        XmlProjectParser.load_project(self.project_path, project)
+        project.load_project(self.project_path)
         # Check synthesis tool name
         self.assertEqual(
             self.synthesis_tool_name,
@@ -238,7 +237,7 @@ class TestXmlProjectLoading(TestProjectInterface):
 
     def testFileSet(self):
         project = Project()
-        XmlProjectParser.load_project(self.project_path, project)
+        project.load_project(self.project_path)
         # Check the file set loaded from the project
         expected_files = []
         for libname in self.project_structure.keys():
@@ -253,7 +252,7 @@ class TestXmlProjectLoading(TestProjectInterface):
 
     def testProjectConstraints(self):
         project = Project()
-        XmlProjectParser.load_project(self.project_path, project)
+        project.load_project(self.project_path)
         # Check the project constraints
         self.assertEqual(
             self.project_constraints,
@@ -262,7 +261,7 @@ class TestXmlProjectLoading(TestProjectInterface):
 
     def testGenerics(self):
         project = Project()
-        XmlProjectParser.load_project(self.project_path, project)
+        project.load_project(self.project_path)
         # Check the synthesis generics
         self.assertDictEqual(
             self.project_generics,
@@ -271,7 +270,7 @@ class TestXmlProjectLoading(TestProjectInterface):
 
     def testReporter(self):
         project = Project()
-        XmlProjectParser.load_project(self.project_path, project)
+        project.load_project(self.project_path)
         # Check the synthesis reporter
         self.assertTrue(
             callable(project.get_reporter())
@@ -279,7 +278,7 @@ class TestXmlProjectLoading(TestProjectInterface):
 
     def testPreprocessor(self):
         project = Project()
-        XmlProjectParser.load_project(self.project_path, project)
+        project.load_project(self.project_path)
         files = project.get_files()
         preprocessors = list(
             filter(
