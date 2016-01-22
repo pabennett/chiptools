@@ -291,7 +291,7 @@ class Ise(synthesiser.Synthesiser):
             mode = key.split('_')[-1]
             if len(mode) > 0 and mode != 'promgen':
                 log.info(
-                    'Generating PROM file using user defined'
+                    'Generating PROM file using user defined '
                     'arguments from configuration item: {0}'.format(key)
                 )
                 # Run promgen using the mode recovered from the config key
@@ -360,7 +360,7 @@ class Ise(synthesiser.Synthesiser):
             # Default to MCS if the user did not specify a mode
             args += ['-p', 'mcs']
         # Always overwrite existing files
-        if 'w' not in args:
+        if '-w' not in args:
             args += ['-w']
         # Allow the user to override the output file name
         if '-o' not in args:
@@ -371,11 +371,11 @@ class Ise(synthesiser.Synthesiser):
     def ise_make_prom_file(self, fin, fout, working_directory, mode='mcs'):
         """
         Generate a programming file using the promgen tool, the user can
-        supply arguments to this flow stage with args_ise_<mode>.
+        supply arguments to this flow stage with args_ise_promgen_<mode>.
         """
         # Get additional tool arguments for this flow stage
         args = self.project.get_tool_arguments(
-            self.name, 'args_ise_promgen_{0}'.format(mode)
+            self.name, 'promgen_{0}'.format(mode)
         )
         args = shlex.split(['', args][args is not None])
         if not any([k in args for k in ['-p', mode]]):
