@@ -18,14 +18,28 @@ providing a consistent interface to vendor applications and automating simulatio
 
 ## Getting Started
 ```
-  # Clone the ChipTools repository to your system
-  $ git clone https://github.com/pabennett/chiptools.git
+  # Clone the ChipTools repository to your system:
+  $ git clone --recursive https://github.com/pabennett/chiptools.git
   
-  # Install using the setup.py script provided in the root directory
+  # Install using the setup.py script provided in the root directory:
+  $ cd chiptools
   $ python setup.py install
   
-  # Start the ChipTools command line interface
+  # Start the ChipTools command line interface:
+  $ cd examples/max_hold
   $ chiptools
+  
+  # Load the example project:
+  (cmd) load_project max_hold.xml
+  
+  # Run the testsuite using Modelsim:
+  (cmd) run_tests modelsim
+  
+  # ...or Vivado (GHDL and ISIM are also supported):
+  (cmd) run_tests vivado
+  
+  # Synthesise the max_hold component in the lib_max_hold library (ISE, Vivado and Quartus are supported)
+  (cmd) synthesise lib_max_hold.max_hold
 ```
 Refer to the [documentation](http://chiptools.readthedocs.org/en/latest/max_hold.html) for examples on using ChipTools to simulate and build FPGA designs.
 
