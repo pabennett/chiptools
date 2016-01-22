@@ -26,10 +26,9 @@ Python import:
 .. code-block:: python
 
     from chiptools.core.project import Project
-    from chiptools.parsers.xml_project import XmlProjectParser
 
     my_project = Project()
-    XmlProjectParser.load_project('my_project.xml', my_project)
+    my_project.load_project('my_project.xml')
 
 .. currentmodule:: chiptools.parsers.xml_project
 .. autoclass:: XmlProjectParser
