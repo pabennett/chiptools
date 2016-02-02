@@ -16,6 +16,7 @@ from chiptools.core import reporter
 from chiptools.core.cache import FileCache
 from chiptools.parsers import options
 from chiptools.parsers import xml_project
+from chiptools.parsers import callgraph
 from chiptools.testing import testloader
 from chiptools.testing.custom_runners import HTMLTestRunner
 from chiptools.wrappers.wrapper import ToolWrapper
@@ -43,6 +44,45 @@ class Project:
         self.file_list = []
         self.project_data = {}
         self.tests = []
+
+    def write_designtree_png(self, path, root):
+
+        # Get root object
+        for file_object in self.get_files():
+            if os.path.splitext(os.path.basename(file_object.path))[0] == root:
+                root = file_object
+                # Continue with drawing the graph
+                cg = callgraph.CallGraph(self.get_files())
+                root = cg.parsed_files[self.get_files().index(root)]
+                graph = callgraph.CallGraph.get_design_hierarchy(
+                    callgraph.CallGraph.get_definition_map(
+                        cg.parsed_files
+                    ),
+                    callgraph.CallGraph.get_reference_map(
+                        cg.parsed_files
+                    )
+                )
+
+                # Get changed files:
+                changed_files = []
+                for idx, file_object in enumerate(self.get_files()):
+                    if self.cache.is_file_changed(file_object, 'modelsim'):  # TODO
+                        changed_files.append(cg.parsed_files[idx])
+
+                # Using the list of changed files, obtain a new list of files
+                # that must be recompiled by inspecting the callgraph.
+                callchain = callgraph.CallGraph.get_callchain(
+                    utils.subgraph(graph, root),
+                    changed_files
+                )
+
+                # Draw the callgraph
+                callgraph.CallGraph.write_graph_png(
+                    utils.subgraph(graph, root),
+                    show_unresolved=True,
+                    highlight_nodes=callchain
+                )
+                return
 
     def load_project(self, path):
         """Initialise this project instance using the project file supplied

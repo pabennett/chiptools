@@ -149,8 +149,15 @@ class CommandLine(cmd.Cmd):
         return True
 
     @wraps_do_commands
+    def do_graph(self, command):
+        self.project.write_designtree_png('graph.png', command)
+
+    @wraps_do_commands
     def do_compile(self, command):
-        self.project.compile()
+        if len(command) > 0:
+            self.project.compile(command)
+        else:
+            self.project.compile()
 
     @wraps_do_commands
     def do_show_synthesis_fileset(self, command):
