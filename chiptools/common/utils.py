@@ -3,6 +3,7 @@ import os
 import logging
 import threading
 import time
+import copy
 
 if __name__ == '__main__':
     import exceptions
@@ -10,6 +11,87 @@ else:
     from chiptools.common import exceptions
 
 log = logging.getLogger(__name__)
+
+
+def subgraph(graph, root):
+    """
+    Given a graph represented by a dictionary of key (node) and value (set of
+    child nodes) and a root node, return a new graph representing the root node
+    and its hierarchy.
+    >>> graph = {
+    ...    2 : set([11]),
+    ...    9 : set([11, 8]),
+    ...    10 : set([11, 3]),
+    ...    11 : set([5, 7]),
+    ...    8 : set([7, 3]),
+    ...    5 : set(),
+    ...    7 : set(),
+    ...    3 : set([5])
+    ... }
+    >>> subgraph(graph, 8)
+    {8: {3, 7}, 3: {5}, 5: set(), 7: set()}
+    """
+    def subgraph_recurse(graph, root, top=False, new_graph=None):
+        if top:
+            new_graph = {root: graph[root]}
+        if root not in new_graph:
+            new_graph[root] = set()
+        if root not in graph:
+            return new_graph
+        for child in graph[root]:
+            new_graph[root].add(child)
+            subgraph_recurse(graph, child, new_graph=new_graph)
+        return new_graph
+    return subgraph_recurse(graph, root, top=True)
+
+
+def topological_sort(graph):
+    """
+    Perform a topological sort on the graph and return a list of sorted nodes.
+    The graph is represented as a dictionary where each key is a node and
+    the value is a list/set of connected child nodes.
+    >>> graph = {
+    ...    2 : set([11]),
+    ...    9 : set([11, 8]),
+    ...    10 : set([11, 3]),
+    ...    11 : set([5, 7]),
+    ...    8 : set([7, 3]),
+    ...    5 : set(),
+    ...    7 : set(),
+    ...    3 : set()
+    ... }
+    >>> topological_sort(graph)
+    [3, 5, 7, 8, 11, 2, 9, 10]
+    """
+    # Kahn's Algorithm (https://en.wikipedia.org/wiki/Topological_sorting)
+    # L ← Empty list that will contain the sorted elements
+    # S ← Set of all nodes with no incoming edges
+    # while S is non-empty do
+    #     remove a node n from S
+    #     add n to tail of L
+    #     for each node m with an edge e from n to m do
+    #         remove edge e from the graph
+    #         if m has no other incoming edges then
+    #             insert m into S
+    # if graph has edges then
+    #     return error (graph has at least one cycle)
+    # else
+    #     return L (a topologically sorted order
+    # Construct a local shallow copy as we directly manipulate graph values
+    graph = dict((k, copy.copy(graph[k])) for k in graph.keys())
+    l = []
+    s = set([node for node in graph if len(graph[node]) == 0])
+    while len(s) > 0:
+        n = s.pop()
+        l.append(n)
+        for m in list(filter(lambda x: n in graph[x], graph.keys())):
+            graph[m].remove(n)
+            if len(graph[m]) == 0:
+                s.add(m)
+    if any(len(graph[n]) > 0 for n in graph.keys()):
+        raise ValueError('Graph contains at least one cycle')
+    else:
+        return l
 
 
 def iterate_tests(test_suite_or_case):
@@ -107,10 +189,10 @@ def execute(command, path=None, shell=True, quiet=False):
 
 
 def call(command, path=None, shell=True):
-    '''
+    """
     Call the executable in the given path, any messages the program generates
     will be routed to stdout and stderr.
-    '''
+    """
     return_val = 0
     if path:
         return_val = subprocess.call(
@@ -125,11 +207,11 @@ def call(command, path=None, shell=True):
 
 
 def popen_throws_ex(command, path=None, quiet=False):
-    '''
+    """
     Call the executable in the given path, hiding standard output unless the
     return value is an error. If the return value is an error raise an
     exception for the caller to handle.
-    '''
+    """
 
     if quiet:
         returnVal, stdout, stderr = popen_quiet(command, path)
@@ -205,10 +287,10 @@ def popen(command, path=None):
 
 
 def popen_quiet(command, path=None):
-    '''
+    """
     Call the executable in the given path and return the standard output and
     error streams.
-    '''
+    """
     returnVal = 0
     stdout = ''
     stderr = ''
@@ -241,4 +323,4 @@ def popen_quiet(command, path=None):
 
 if __name__ == '__main__':
     import doctest
-    doctest.testmod()
+    doctest.testmod(verbose=True)
