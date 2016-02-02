@@ -147,6 +147,9 @@ class File(object):
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
+    def __repr__(self):
+        return('<File ({0})>'.format(os.path.basename(self.path)))
+
     def get_tool_arguments(self, toolName, flowName):
         """
         Return the optional tool arguments attached to this file for the given
