@@ -42,6 +42,8 @@ class Ghdl(Simulator):
             '-r',
             '--work=' + library,
         ]
+        # Primary Unit
+        args += [entity]
         # Map any generics
         for name, binding in generics.items():
             args += ['-g{0}={1}'.format(name, binding)]
@@ -51,7 +53,6 @@ class Ghdl(Simulator):
                     '--stop-time=' + utils.seconds_to_timestring(duration)
                 ]
         # Run the simulation
-        args += [entity]
         ret, stdout, stderr = Ghdl._call(
             self.ghdl,
             args,
