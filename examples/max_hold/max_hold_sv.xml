@@ -1,0 +1,22 @@
+<project>
+    <config simulation_directory='simulation'/>
+    <config synthesis_directory='synthesis'/>
+    <config simulator='iverilog'/>
+    <config synthesiser='vivado'/>
+    <config part='xc7a100tcsg324-1'/>
+
+    <unittest path='basic_unit_test.py'/>
+    <unittest path='max_hold_tests.py'/>
+
+    <!-- Used by the ISE synthesis flow only -->
+    <constraints path='max_hold.ucf' flow='ise'/>
+    <!-- Used by the Vivado synthesis flow only -->
+    <constraints path='max_hold.xdc' flow='vivado'/>
+
+    <generic data_width='3'/>
+
+    <library name='lib_max_hold'>
+        <file path='max_hold.sv'/>
+        <file path='tb_max_hold.sv' synthesise='false'/>
+    </library>
+</project>
