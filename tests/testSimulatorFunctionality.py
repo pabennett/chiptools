@@ -111,6 +111,10 @@ class TestSimulatorInterface(unittest.TestCase):
             self.assertEqual(failures, 0)
 
 
+###############################################################################
+# Test the simulator wrappers using the Max Hold (VHDL) example
+###############################################################################
+
 class TestExampleProjectsMaxHoldModelsim(TestSimulatorInterface):
 
     simulator_name = 'modelsim'
@@ -126,12 +130,34 @@ class TestExampleProjectsMaxHoldModelsim(TestSimulatorInterface):
         self.checkUnitTestFramework()
 
 
-class TestExampleProjectsMaxHoldIsim(TestExampleProjectsMaxHoldModelsim):
+class TestExampleProjectsMaxHoldVhdlIsim(TestExampleProjectsMaxHoldModelsim):
     simulator_name = 'isim'
 
 
-class TestExampleProjectsMaxHoldGhdl(TestExampleProjectsMaxHoldModelsim):
+class TestExampleProjectsMaxHoldVhdlGhdl(TestExampleProjectsMaxHoldModelsim):
     simulator_name = 'ghdl'
+
+###############################################################################
+# Test the simulator wrappers using the Max Hold (SystemVerilog) example
+###############################################################################
+
+
+class TestExampleProjectsMaxHoldSvIcarus(TestExampleProjectsMaxHoldModelsim):
+    simulator_name = 'ghdl'
+    root = os.path.join('examples', 'max_hold')
+    project_path = os.path.join(root, 'max_hold_sv.xml')
+
+
+class TestExampleProjectsMaxHoldSvVivado(TestExampleProjectsMaxHoldModelsim):
+    simulator_name = 'vivado'
+    root = os.path.join('examples', 'max_hold')
+    project_path = os.path.join(root, 'max_hold_sv.xml')
+
+
+class TestExampleProjectsMaxHoldSvModelsim(TestExampleProjectsMaxHoldModelsim):
+    simulator_name = 'modelsim'
+    root = os.path.join('examples', 'max_hold')
+    project_path = os.path.join(root, 'max_hold_sv.xml')
 
 if __name__ == '__main__':
     unittest.main()
