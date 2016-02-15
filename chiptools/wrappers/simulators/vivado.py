@@ -71,6 +71,7 @@ class Vivado(Simulator):
             xelab_args = ''  # use a string sequence for Vivado on Windows
             if gui:
                 xelab_args += '-debug all'
+            # Add generics
             for name, binding in generics.items():
                 # TODO: The -generic_top argument formatting is hacked here for
                 # Vivado simulator on Windows. Xilinx may address this issue in
@@ -78,9 +79,25 @@ class Vivado(Simulator):
                 # The issue is present in Vivado 2015.4
                 xelab_args += (
                     '-generic_top' + ' ' +
-                    name.upper() +
+                    name +
                     '\"' + '=' + '\"' +
                     str(binding) + ' '
+                )
+            # Add external includes
+            for libname, path in includes.items():
+                xelab_args += (
+                    '-lib' + ' ' +
+                    libname +
+                    '\"' + '=' + '\"' +
+                    path + ' '
+                )
+            # Add project libraries
+            for libname in self.project.get_libraries():
+                xelab_args += (
+                    '-lib' + ' ' +
+                    libname +               # Library Name
+                    '\"' + '=' + '\"' +
+                    libname + ' '           # Library Path
                 )
             # Execute XELAB on the design files:
             xelab_args += (' ' + library + '.' + str(entity))
@@ -91,11 +108,25 @@ class Vivado(Simulator):
             xelab_args = []
             if gui:
                 xelab_args += ['-debug', 'all']
+            # Add generics
             for name, binding in generics.items():
                 xelab_args += [
                     '-generic_top',
-                    name.upper() + '=' + str(binding) + ' ' ,
+                    name + '=' + str(binding) + ' ',
                 ]
+            # Add external includes
+            for libname, path in includes.items():
+                xelab_args += [
+                    '-lib',
+                    libname + '=' + str(path) + ' ',
+                ]
+            # Add project libraries
+            for libname in self.project.get_libraries():
+                xelab_args += [
+                    '-lib',
+                    libname + '=' + str(libname) + ' ',
+                ]
+
             # Execute XELAB on the design files:
             xelab_args += [library + '.' + str(entity)]
             xelab_args += ['-s', str(entity)]
@@ -144,7 +175,7 @@ class Vivado(Simulator):
         cwd = self.project.get_simulation_directory()
         if file_object.library not in self.libraries:
             self.libraries[file_object.library] = file_object.library
-            self.write_includes()
+        self.write_includes()
         args = self.project.get_tool_arguments(self.name, 'compile')
         if len(args) == 0:
             args = file_object.get_tool_arguments(self.name, 'compile')
