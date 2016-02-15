@@ -49,7 +49,7 @@ module tb_max_hold;
     end
     always begin
         if (!lastCycle) begin
-            $fscanf(fileid, "%b %b\n", inReset, inData);
+            readCount = $fscanf(fileid, "%b %b\n", inReset, inData);
         end
         reset <= inReset;
         data <= inData;
