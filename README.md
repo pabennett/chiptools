@@ -54,6 +54,7 @@ will be added in the future.
 * ISIM (tested with 14.7)
 * GHDL (tested with 0.31)
 * Vivado (tested with 2015.4)
+* Icarus (tested with 0.9.7)
 
 ### Synthesis Tools
 

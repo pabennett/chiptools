@@ -35,6 +35,8 @@ Simulation Tools
 * Modelsim (tested with 10.3)
 * ISIM (tested with 14.7)
 * GHDL (tested with 0.31)
+* Vivado (tested with 2015.4)
+* Icarus (tested with 0.9.7)
 
 Synthesis Tools
 ---------------
@@ -42,4 +44,3 @@ Synthesis Tools
 * Xilinx ISE (tested with 14.7)
 * Quartus (tested with 13.1)
 * Vivado (tested with 2015.4)
-* Lattice (*in progress*)
