@@ -31,19 +31,26 @@ The following source files belong to the Max Hold example:
    :header: "Name", "Type", "Description"
    :widths: 20, 20, 10
 
-   "max_hold.vhd",        "VHDL",           "The Max Hold component (VHDL)"
-   "pkg_max_hold.vhd",    "VHDL",           "Supporting package for the Max Hold component."
-   "tb_max_hold.vhd",     "VHDL",           "Testbench for the Max Hold component. (VHDL)"
-   "max_hold.sv",         "SystemVerilog",  "The Max Hold component (SystemVerilog)"
-   "tb_max_hold.sv",      "SystemVerilog",  "Testbench for the Max Hold component (SystemVerilog)."
-   "max_hold_tests.py",   "Python",         "A collection of advanced unit tests."
-   "basic_unit_tests.py", "Python",         "A simple unit test."
-   "max_hold.xml",        "XML",            "Project file (VHDL sources)."
-   "max_hold_sv.xml",     "XML",            "Project file (SystemVerilog sources)."
-   "max_hold.ucf",        "Constraints",    "Constraints file when using the ISE synthesis flow."
-   "max_hold.xdc",        "Constraints",    "Constraints file when using the Vivado synthesis flow."
-   "simulation",          "Folder",         "Output directory for simulation tasks."
-   "synthesis",           "Folder",         "Output directory for synthesis tasks."
+   "max_hold.vhd",        "**VHDL**",          "Max Hold component (VHDL)."
+   "pkg_max_hold.vhd",    "**VHDL**",          "Package for Max Hold component."
+   "tb_max_hold.vhd",     "**VHDL**",          "Testbench for Max Hold component (VHDL)."
+   "max_hold.sv",         "**SystemVerilog**", "Max Hold component (SystemVerilog)."
+   "tb_max_hold.sv",      "**SystemVerilog**", "Testbench for Max Hold component (SystemVerilog)."
+
+Support files:
+
+.. csv-table::
+   :header: "Name", "Type", "Description"
+   :widths: 20, 20, 10
+
+   "max_hold_tests.py",   "**Unit Test**",     "Collection of advanced unit tests."
+   "basic_unit_tests.py", "**Unit Test**",     "Simple unit test."
+   "max_hold.xml",        "**Project**",       "Project file (using VHDL sources)."
+   "max_hold_sv.xml",     "**Project**",       "Project file (using SystemVerilog sources)."
+   "max_hold.ucf",        "**Constraints**",   "Constraints file when using the ISE synthesis flow."
+   "max_hold.xdc",        "**Constraints**",   "Constraints file when using the Vivado synthesis flow."
+   "simulation",          "**Folder**",        "Output directory for simulation tasks."
+   "synthesis",           "**Folder**",        "Output directory for synthesis tasks."
 
 The Max Hold component has been designed in both VHDL and SystemVerilog so that
 single-language simulators such as GHDL or Icarus can be used.
@@ -58,7 +65,7 @@ files with ChipTools. The complete example is available in
 Initial Setup
 ~~~~~~~~~~~~~
 
-Firstly, import the ChipTools Project wrapper and create a project instance:
+First, import the ChipTools Project wrapper and create a project instance:
 
 .. code-block:: python
 
@@ -131,7 +138,7 @@ Add the Max Hold source files to the project and assign them to a library:
     project.add_file('pkg_max_hold.vhd', library='lib_max_hold')
 
 The testbench is also added to the project under a different library.
-The optional argument *synthesise* is set to 'False' when adding the testbench
+The optional argument *synthesise* is set to **False** when adding the testbench
 as we do not want to include it in the files sent to synthesis:
 
 .. code-block:: python
@@ -157,7 +164,7 @@ added to the project using the **add_unittest** method:
     project.add_unittest('basic_unit_test.py')
 
 Finally, the constraints files can be added to the project using the 
-**add_constraints** method, which takes a filepath argument and an optional
+**add_constraints** method, which takes a **path** argument and an optional
 **flow** name argument which allows you to explicitly name which synthesis flow
 the constraints are intended for:
 
@@ -268,11 +275,11 @@ or a reset to be issued to the unit under test:
 
 +-----------------------------------------------------------------------------+
 |                    Stimulus File Format                                     |
-+------------------------+-----------------------------------------------+----+
-| Reset (1-bit) (Binary) | Data (N-bit) (Binary)                         | \n |
-+------------------------+-----------------------------------------------+----+
-| Reset (1-bit) (Binary) | Data (N-bit) (Binary)                         | \n |
-+------------------------+-----------------------------------------------+----+
++------------------------+----------------------------------------------------+
+| Reset (1-bit) (Binary) | Data (N-bit) (Binary)                              |
++------------------------+----------------------------------------------------+
+| Reset (1-bit) (Binary) | Data (N-bit) (Binary)                              |
++------------------------+----------------------------------------------------+
 |                            ... Repeated                                     |  
 +-----------------------------------------------------------------------------+
 
@@ -472,7 +479,7 @@ file in the Max Hold example folder implements the following tests:
    "max_hold_sinusoid_test", 12, "Multiple sinusoidal sequences of random length." 
    "max_hold_square_test", 8, "Multiple toggling sequences of random length."
 
-When the tests are run, if *Matplotlib* is installed the Unit Test will also
+If **Matplotlib** is installed the Unit Test will also
 create an output image for each test in the simulation folder to show a graph
 of the input data with the model data and the Max Hold component output data.
 For example, the max_hold_sinusoid_single_sequence test produces the following
