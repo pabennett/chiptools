@@ -37,10 +37,6 @@ from chiptools.testing.testloader import ChipToolsTest
 # here will be formatted and displayed using the ChipTools logger config.
 log = logging.getLogger(__name__)
 
-# Opcodes used by the Max Hold testbench file reader
-reset_opcode = 0
-write_opcode = 1
-
 
 def get_random_data(data_width, sequence_lengths):
     return [
@@ -92,7 +88,7 @@ class MaxHoldTests(ChipToolsTest):
 
     def tearDown(self):
         """Insert any cleanup code to remove generated files in this method."""
-        os.remove(self.input_path)
+        #os.remove(self.input_path)
         os.remove(self.output_path)
 
     def write_stimulus(self, path, values, data_width):
@@ -105,12 +101,17 @@ class MaxHoldTests(ChipToolsTest):
         with open(path, 'w') as f:
             for sequence in values:
                 # Reset the component at the beginning of a new sequence.
-                f.write('{0}\n'.format(bin(reset_opcode)[2:].zfill(4)))
+                f.write(
+                    '{0} {1}\n'.format(
+                        '1',
+                        '0' * data_width
+                    )
+                )
                 # Write each value in the sequence to the stimulus file
                 for value in sequence:
                     f.write(
                         '{0} {1}\n'.format(
-                            bin(write_opcode)[2:].zfill(4),
+                            '0',
                             bin(value)[2:].zfill(data_width),
                         )
                     )
@@ -162,7 +163,11 @@ class MaxHoldTests(ChipToolsTest):
             # Per element comparison checking, you could use assertListEqual
             # but it can be slow for large lists
             # (https://bugs.python.org/issue19217)
-            self.assertEqual(val, expected[valIdx])
+            self.assertEqual(
+                val,
+                expected[valIdx], 
+                msg='Index {0}'.format(valIdx)
+            )
         log.info("...done")
 
     def save_figure(

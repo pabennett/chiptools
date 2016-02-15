@@ -3,13 +3,7 @@
 -- This testbench instances the max_hold component and exercises it with data
 -- from the input.txt stimulus file. The input.txt stimulus file should contain
 -- the following data on each line:
--- <binary 8bit opcode (00000000 = reset, 00000001 = write)>
--- <binary nbit data (only if opcode is write)
--- The testbench will either reset the UUT or write data to it depending on
--- the content of each line. When the UUT is reset the testbench will read the
--- current UUT output and store it in an output.txt file for it to be checked
--- by an external program (in this case max_hold_tests.py performs these
--- checks)
+-- <RESET (1bit)> <DATA (nbit)>
 -- The output file format is simply rows of binary data where each row contains
 -- an nbit binary value.
 -------------------------------------------------------------------------------
@@ -50,14 +44,12 @@ begin
     stim_parser : process
         constant input_path     : string := "input.txt";
         constant output_path    : string := "output.txt";
-        constant opcode_reset   : bit_vector(3 downto 0) := x"0";
-        constant opcode_write   : bit_vector(3 downto 0) := x"1";
         file     input_file     : text;
         file     output_file    : text;
         variable data_line      : line;
         variable output_line    : line;
         variable status         : file_open_status := status_error;
-        variable opcode         : bit_vector(3 downto 0);
+        variable in_reset       : bit_vector(0 downto 0);
         variable data           : bit_vector(data_width-1 downto 0);
         variable read_ok        : boolean;
         variable first_call     : boolean := true;
@@ -73,24 +65,14 @@ begin
                 severity failure;
         end if;
 
-        reset <= '0';
-
         if not endfile(input_file) then
             readline(input_file, data_line);
-            -- Get OpCode
-            read(data_line, opcode, read_ok);
-            if opcode = opcode_reset then
-                reset <= '1';
-            elsif opcode = opcode_write then
-                -- Get Data
-                read(data_line, data, read_ok);
-                uut_data <= to_stdlogicvector(data);
-            else
-                report(
-                    "Invalid opcode: " & integer'image(
-                        to_integer(unsigned(to_stdlogicvector(opcode))))
-                    ) severity error;
-            end if; 
+            -- Get Reset
+            read(data_line, in_reset, read_ok);
+            reset <= to_stdlogicvector(in_reset)(0);
+            -- Get Data
+            read(data_line, data, read_ok);
+            uut_data <= to_stdlogicvector(data);
             wait until rising_edge(clock);
             if first_call then
                 first_call := false;

@@ -39,8 +39,9 @@ class MaxHoldsTestBase(ChipToolsTest):
 
     def tearDown(self):
         """Insert any cleanup code to remove generated files in this method."""
-        os.remove(self.input_path)
-        os.remove(self.output_path)
+        #os.remove(self.input_path)
+        #os.remove(self.output_path)
+        pass
 
     def run_random_data_test(self, n):
 
@@ -52,7 +53,7 @@ class MaxHoldsTestBase(ChipToolsTest):
             for value in self.values:
                 f.write(
                     '{0} {1}\n'.format(
-                        '0001',  # write instruction opcode
+                        '0',  # Reset status (0) 
                         bin(value)[2:].zfill(32),  # write 32bit data
                     )
                 )
