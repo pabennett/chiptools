@@ -17,6 +17,9 @@
 
     <library name='lib_max_hold'>
         <file path='max_hold.sv'/>
-        <file path='tb_max_hold.sv' synthesise='false'/>
+    </library>
+
+    <library name='lib_tb_max_hold' synthesise='false'>
+        <file path='tb_max_hold.sv'/>
     </library>
 </project>
