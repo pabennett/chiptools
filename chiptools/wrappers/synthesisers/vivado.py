@@ -71,9 +71,9 @@ class Vivado(synthesiser.Synthesiser):
                 generics,
                 *self.project.get_tool_arguments(self.name, 'synthesis')
             )
-            self.report_timing(synthesis_name + '_post_synth_timing.rpt')
-            self.write_checkpoint(synthesis_name + '_post_synth.dcp')
-            self.report_utilization(synthesis_name + '_post_synth_util.rpt')
+            self.report_timing(entity + '_post_synth_timing.rpt')
+            self.write_checkpoint(entity + '_post_synth.dcp')
+            self.report_utilization(entity + '_post_synth_util.rpt')
             # Step 3: Run placement and logic optimisation, report utilisation
             # and timing estimates:
             self.write_tcl('opt_design')
@@ -81,25 +81,25 @@ class Vivado(synthesiser.Synthesiser):
             self.write_tcl('place_design')
             self.write_tcl('phys_opt_design -retime')
             self.write_checkpoint(synthesis_name + '_post_place.dcp')
-            self.report_clock_utilization(synthesis_name + '_clock_util.rpt')
-            self.report_utilization(synthesis_name + '_post_place_util.rpt')
-            self.report_timing(synthesis_name + '_post_place_timing.rpt')
+            self.report_clock_utilization(entity + '_clock_util.rpt')
+            self.report_utilization(entity + '_post_place_util.rpt')
+            self.report_timing(entity + '_post_place_timing.rpt')
             # Step 4: Run router, report actual utilisation and timing, write
             # checkpoint, run DRCs.
             self.write_tcl('route_design')
             self.write_checkpoint(synthesis_name + '_post_route.dcp')
             self.report_timing_summary(
-                synthesis_name + '_post_route_timing.rpt'
+                entity + '_post_route_timing.rpt'
             )
-            self.report_utilization(synthesis_name + '_post_route_util.rpt')
+            self.report_utilization(entity + '_post_route_util.rpt')
             self.write_tcl(
                 'report_power -file {0}'.format(
                     synthesis_name + '_post_route_power.rpt'
                 )
             )
-            self.report_drc(synthesis_name + '_post_route_drc.rpt')
+            self.report_drc(entity + '_post_route_drc.rpt')
             # Step 5: Write bitstream
-            self.write_bitstream(synthesis_name + '.bit')
+            self.write_bitstream(entity + '.bit')
             self.write_tcl('quit')
             # Run the Vivado flow
             try:
