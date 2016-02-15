@@ -61,6 +61,9 @@ class Modelsim(Simulator):
         # Add any includes
         for libname, path in includes.items():
             arguments += ['-L', libname]
+        # Add project libraries
+        for libname in self.project.get_libraries():
+            arguments += ['-L', libname]
         # Map any generics
         for name, binding in generics.items():
             arguments += ['-G{0}={1}'.format(name, binding)]
