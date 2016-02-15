@@ -31,16 +31,23 @@ The following source files belong to the Max Hold example:
    :header: "Name", "Type", "Description"
    :widths: 20, 20, 10
 
-   "max_hold.vhd",        "VHDL",        "The Max Hold component."
-   "pkg_max_hold.vhd",    "VHDL",        "Supporting package for the Max Hold component."
-   "tb_max_hold.vhd",     "VHDL",        "Testbench for the Max Hold component."
-   "max_hold_tests.py",   "Python",      "A collection of advanced unit tests."
-   "basic_unit_tests.py", "Python",      "A simple unit test."
-   "max_hold.ucf",        "Constraints", "Constraints file when using the ISE synthesis flow."
-   "max_hold.xdc",        "Constraints", "Constraints file when using the Vivado synthesis flow."
-   "simulation",          "Folder",      "Output directory for simulation tasks."
-   "synthesis",           "Folder",      "Output directory for synthesis tasks."
- 
+   "max_hold.vhd",        "VHDL",           "The Max Hold component (VHDL)"
+   "pkg_max_hold.vhd",    "VHDL",           "Supporting package for the Max Hold component."
+   "tb_max_hold.vhd",     "VHDL",           "Testbench for the Max Hold component. (VHDL)"
+   "max_hold.sv",         "SystemVerilog",  "The Max Hold component (SystemVerilog)"
+   "tb_max_hold.sv",      "SystemVerilog",  "Testbench for the Max Hold component (SystemVerilog)."
+   "max_hold_tests.py",   "Python",         "A collection of advanced unit tests."
+   "basic_unit_tests.py", "Python",         "A simple unit test."
+   "max_hold.xml",        "XML",            "Project file (VHDL sources)."
+   "max_hold_sv.xml",     "XML",            "Project file (SystemVerilog sources)."
+   "max_hold.ucf",        "Constraints",    "Constraints file when using the ISE synthesis flow."
+   "max_hold.xdc",        "Constraints",    "Constraints file when using the Vivado synthesis flow."
+   "simulation",          "Folder",         "Output directory for simulation tasks."
+   "synthesis",           "Folder",         "Output directory for synthesis tasks."
+
+The Max Hold component has been designed in both VHDL and SystemVerilog so that
+single-language simulators such as GHDL or Icarus can be used.
+
 Creating the Project
 ---------------------
 
@@ -236,22 +243,42 @@ using the **load_project** command:
     $ chiptools
     (cmd) load_project max_hold.xml
 
+...or in a Python script:
+
+.. code-block:: python
+
+    from chiptools.core.project import Project
+
+    # Create a new Project
+    project = Project()
+    # Load a pre-existing project file
+    project.load_project('max_hold.xml')
+
 Simulation and Test
 --------------------
 
-To test the Max Hold component an accompanying VHDL testbench, 
-*tb_max_hold.vhd*, is used to feed the component data from a stimulus input
-text file and record the output values in an output text file. By using 
-stimulus input files and output files we gain the freedom to use the
-language of our choice to generate stimulus and check results.
+To test the Max Hold component an accompanying testbench, *tb_max_hold.vhd*
+(VHDL) or *tb_max_hold.sv* (SystemVerilog), is used to feed the component data
+from a stimulus input text file and record the output values in an output text
+file. By using stimulus input files and output files we gain the freedom to use
+the language of our choice to generate stimulus and check results.
 
-A simple stimulus file format is used by the testbench that allows a data
-write or a reset to be issued to the unit under test. Each line of the stimulus
-file contains a binary 4 bit *opcode*, which supports either a **reset**
-instruction: 0000 or a **write** instruction: 0001. When a write 
-instruction is used a binary data field must follow on the same line; the
-width of the binary data field must match the data width on the testbench
-generic.
+A simple stimulus file format is used by the testbench that allows a data write
+or a reset to be issued to the unit under test:
+
++-----------------------------------------------------------------------------+
+|                    Stimulus File Format                                     |
++------------------------+-----------------------------------------------+----+
+| Reset (1-bit) (Binary) | Data (N-bit) (Binary)                         | \n |
++------------------------+-----------------------------------------------+----+
+| Reset (1-bit) (Binary) | Data (N-bit) (Binary)                         | \n |
++------------------------+-----------------------------------------------+----+
+|                            ... Repeated                                     |  
++-----------------------------------------------------------------------------+
+
+The width of the binary data field must match the data width on the testbench
+generic. On each clock cycle a single line should be read from the stimulus
+file and the supplied values sent to the input of the Max Hold component.
 
 We will use Python to create stimulus files in this format for the testbench.
 
@@ -349,7 +376,7 @@ operations:
             for value in self.values:
                 f.write(
                     '{0} {1}\n'.format(
-                        '0001',  # write instruction opcode
+                        '0',  # Reset status (0) 
                         bin(value)[2:].zfill(32),  # write 32bit data
                     )
                 )
@@ -373,6 +400,7 @@ operations:
 
         # Compare the expected result to what the Testbench returned:
         self.assertListEqual(output_values, max_hold)
+
 
 Now we can add extra functions to our class using the 'test' prefix to execute
 **run_random_data_test** with different parameters:
@@ -444,17 +472,18 @@ file in the Max Hold example folder implements the following tests:
    "max_hold_sinusoid_test", 12, "Multiple sinusoidal sequences of random length." 
    "max_hold_square_test", 8, "Multiple toggling sequences of random length."
 
-When the tests are run, the Unit Test will also create an output image for each
-test in the simulation folder to show a graph of the input data with the model data and
-the Max Hold component output data. For example, the max_hold_sinusoid_single_sequence
-test produces the following output:
+When the tests are run, if *Matplotlib* is installed the Unit Test will also
+create an output image for each test in the simulation folder to show a graph
+of the input data with the model data and the Max Hold component output data.
+For example, the max_hold_sinusoid_single_sequence test produces the following
+output:
 
 .. image:: max_hold_sinusoid_single_sequence.png
 
 .. note:: For this example, graph generation requires `Matplotlib <http://matplotlib.org/>`_ (optionally with `Seaborn <http://stanford.edu/~mwaskom/software/seaborn/>`_)
 
-Plots such as these provide a powerful diagnostic tool when debugging components
-or analysing performance.
+Plots such as these provide a powerful diagnostic tool when debugging
+components or analysing performance.
 
 Synthesis and Build
 -------------------
