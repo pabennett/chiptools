@@ -1,10 +1,14 @@
-module tb_max_hold;
+module tb_max_hold #(parameter data_width = 3);
     /* ------------------------------------------------------------------------
-    ** data_width will be overidden by chiptools, we cannot use parameters
-    ** as unfortunately these can not be set by Icarus
+    ** data_width will be overidden by chiptools.
+    ** Icarus does not support Parameter overrides, but other tools do. We work
+    ** around this by providing a Parameter for tools that do support them and 
+    ** then create a `define for each parameter of the same name so that tools
+    ** that do not support parameter overrides can overload the `define
+    ** instead. 
     ** ----------------------------------------------------------------------*/
     `ifndef data_width
-        `define data_width 3
+        `define data_width data_width
     `endif
     /* ------------------------------------------------------------------------
     ** Registers / Wires
