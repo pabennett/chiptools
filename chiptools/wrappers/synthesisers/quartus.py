@@ -32,7 +32,7 @@ class Quartus(synthesiser.Synthesiser):
 
     """
     name = 'quartus'
-    executables = ['quartus_sh']
+    executables = ['quartus_sh', 'quartus_cpf']
 
     def __init__(self, project, user_paths):
         """
@@ -40,6 +40,7 @@ class Quartus(synthesiser.Synthesiser):
         """
         super(Quartus, self).__init__(project, self.executables, user_paths)
         self.quartus_sh = os.path.join(self.path, 'quartus_sh')
+        self.quartus_cpf = os.path.join(self.path, 'quartus_cpf')
 
     @synthesiser.throws_synthesis_exception
     def synthesise(self, library, entity, fpga_part=None):
@@ -88,6 +89,8 @@ class Quartus(synthesiser.Synthesiser):
                     os.path.basename(projectFilePath),
                     synthesisDirectory
                 )
+                # Convert programming files using user-supplied args
+                self.generate_programming_files(entity, synthesisDirectory)
             except:
                 # Archive the outputs
                 log.error(
@@ -271,6 +274,49 @@ class Quartus(synthesiser.Synthesiser):
             'project_new -overwrite -revision ' +
             entity + ' ' + entity + 'proj' + '\n'
         )
+
+    @synthesiser.throws_synthesis_exception
+    def generate_programming_files(self, entity, working_directory):
+        """
+        Convert programming files using the quartus_cpf utility using user
+        defined arguments supplied in the project configuration. User defined
+        arguments should be supplied via configuration items using the
+        following naming convention: 'args_quartus_cpf_<format>'. If no
+        configuration items matching this naming convention are provided then
+        no additional programming files will be generated.
+        """
+        # Get all Quartus tool arguments for the CPF stage:
+        arg_keys = self.project.get_all_tool_argument_keys(self.name)
+
+        def filter_args_fn(x):
+            return x.startswith('args_{0}_cpf'.format(self.name))
+
+        arg_keys = list(filter(filter_args_fn, arg_keys))
+
+        for key in arg_keys:
+            mode = key.split('_')[-1]
+            if len(mode) > 0 and mode != 'cpf':
+                log.info(
+                    'Generating programming file using user defined '
+                    'arguments from configuration item: {0}'.format(key)
+                )
+                # Get the quartus_cpf user args specific to this format
+                args = self.project.get_tool_arguments(
+                    self.name, 'cpf_{0}'.format(mode)
+                )
+                args = shlex.split(['', args][args is not None])
+                # Append the input and output file names
+                args += [
+                    entity + '.sof',        # Input SOF
+                    entity + '.' + mode     # Output file
+                ]
+                # Run quartus_cpf using the mode recovered from the config key
+                Quartus._call(
+                    self.quartus_cpf,
+                    args,
+                    cwd=working_directory,
+                    quiet=False
+                )
 
     @synthesiser.throws_synthesis_exception
     def exec_quartus_sh(
