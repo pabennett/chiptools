@@ -21,14 +21,21 @@ class FileType(Enum):
 
 # Mapping of file extensions to FileType objects
 fileExtensionsLookup = {
+    # Common VHDL source extensions
     '.vhd': FileType.VHDL,
     '.vhdl': FileType.VHDL,
+    # Common Verilog source extentions
     '.v': FileType.Verilog,
+    '.vl': FileType.Verilog,
     '.sv': FileType.SystemVerilog,
+    # Netlist Extensions
     '.ngc': FileType.NGCNetlist,
+    # Constraint/Script Extensions
     '.tcl': FileType.TCL,
     '.sdc': FileType.SDC,
+    # Python
     '.py': FileType.Python,
+    # Vivado/ISE Extentions
     '.xci': FileType.VivadoIp,
     '.xco': FileType.VivadoIp,
     '.xdc': FileType.VivadoXDC,
