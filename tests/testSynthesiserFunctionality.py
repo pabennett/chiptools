@@ -112,58 +112,58 @@ class TestSynthesiserInterface(unittest.TestCase):
                 )
 
 
-#class TestMaxHoldSynthesisIse(TestSynthesiserInterface):
-#
-#    synthesiser_name = 'ise'
-#    root = os.path.join('examples', 'max_hold')
-#    project_path = os.path.join(root, 'max_hold.xml')
-#    part = 'xc6slx9-csg324-2'
-#
-#    def test_synthesise(self):
-#        self.preTestCheck()
-#        self.cli.do_synthesise(
-#            (
-#                self.library + '.' +
-#                self.entity + ' ' +
-#                self.synthesiser_name + ' ' +
-#                self.part
-#            )
-#        )
-#        # Check for output products
-#        expected_outputs = [
-#            self.entity + '.bit',
-#        ]
-#        exclude_outputs = [
-#            'xflow.log'
-#        ]
-#        self.checkTarFile(expected_outputs, exclude_outputs)
-#
-#
-#class TestMaxHoldSynthesisVivado(TestSynthesiserInterface):
-#
-#    synthesiser_name = 'vivado'
-#    root = os.path.join('examples', 'max_hold')
-#    project_path = os.path.join(root, 'max_hold.xml')
-#    part = 'xc7a100tcsg324-1'
-#
-#    def test_synthesise(self):
-#        self.preTestCheck()
-#        self.cli.do_synthesise(
-#            (
-#                self.library + '.' +
-#                self.entity + ' ' +
-#                self.synthesiser_name + ' ' +
-#                self.part
-#            )
-#        )
-#        # Check for output products
-#        expected_outputs = [
-#            self.entity + '.bit',
-#        ]
-#        exclude_outputs = []
-#        self.checkTarFile(expected_outputs, exclude_outputs)
-#
-#
+class TestMaxHoldSynthesisIse(TestSynthesiserInterface):
+
+    synthesiser_name = 'ise'
+    root = os.path.join('examples', 'max_hold')
+    project_path = os.path.join(root, 'max_hold.xml')
+    part = 'xc6slx9-csg324-2'
+
+    def test_synthesise(self):
+        self.preTestCheck()
+        self.cli.do_synthesise(
+            (
+                self.library + '.' +
+                self.entity + ' ' +
+                self.synthesiser_name + ' ' +
+                self.part
+            )
+        )
+        # Check for output products
+        expected_outputs = [
+            self.entity + '.bit',
+        ]
+        exclude_outputs = [
+            'xflow.log'
+        ]
+        self.checkTarFile(expected_outputs, exclude_outputs)
+
+
+class TestMaxHoldSynthesisVivado(TestSynthesiserInterface):
+
+    synthesiser_name = 'vivado'
+    root = os.path.join('examples', 'max_hold')
+    project_path = os.path.join(root, 'max_hold.xml')
+    part = 'xc7a100tcsg324-1'
+
+    def test_synthesise(self):
+        self.preTestCheck()
+        self.cli.do_synthesise(
+            (
+                self.library + '.' +
+                self.entity + ' ' +
+                self.synthesiser_name + ' ' +
+                self.part
+            )
+        )
+        # Check for output products
+        expected_outputs = [
+            self.entity + '.bit',
+        ]
+        exclude_outputs = []
+        self.checkTarFile(expected_outputs, exclude_outputs)
+
+
 class TestMaxHoldSynthesisQuartus(TestSynthesiserInterface):
 
     synthesiser_name = 'quartus'
