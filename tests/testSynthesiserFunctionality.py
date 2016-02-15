@@ -44,6 +44,8 @@ class TestSynthesiserInterface(unittest.TestCase):
         self.assertTrue(os.path.exists(self.project_path))
         self.cli = cli.CommandLine()
         self.cli.do_load_project(self.project_path)
+        # Clean up any existing test data
+        self.tearDown()
         # Override the project synthesiser config
         self.cli.project.add_config(
             'synthesiser',
