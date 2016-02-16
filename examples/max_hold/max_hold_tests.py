@@ -88,7 +88,7 @@ class MaxHoldTests(ChipToolsTest):
 
     def tearDown(self):
         """Insert any cleanup code to remove generated files in this method."""
-        #os.remove(self.input_path)
+        os.remove(self.input_path)
         os.remove(self.output_path)
 
     def write_stimulus(self, path, values, data_width):
