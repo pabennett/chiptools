@@ -35,13 +35,18 @@ class TestSynthesiserInterface(unittest.TestCase):
         )
         if synthesiser is None or not synthesiser.installed:
             raise unittest.SkipTest(
-                'Cannot run this test as no synthesiser is available.'
+                'Cannot run this test as {0} is not available.'.format(
+                    synthesiser.name
+                )
             )
 
     def setUp(self):
         if self.project_path is None:
             return
-        self.assertTrue(os.path.exists(self.project_path))
+        self.assertTrue(
+            os.path.exists(self.project_path),
+            msg='Could not find the project file.'
+        )
         self.cli = cli.CommandLine()
         self.cli.do_load_project(self.project_path)
         # Clean up any existing test data
@@ -59,25 +64,6 @@ class TestSynthesiserInterface(unittest.TestCase):
             if f.endswith('.tar'):
                 os.remove(os.path.join(root, f))
 
-    def checkTestReport(self, path='report.html'):
-        self.assertTrue(os.path.exists(path))
-        with open(path, 'r') as f:
-            data = f.read()
-        self.assertTrue(len(data) > 0)
-        failures = re.search(
-            'Failure (\\d+)',
-            data
-        )
-        passes = re.search(
-            'Pass (\\d+)',
-            data
-        )
-        self.assertIsNotNone(passes)
-        # Absence of 'Failures' in test report means nothing failed
-        if failures is not None:
-            failures = int(failures.group(1))
-            self.assertEqual(failures, 0)
-
     def checkTarFile(self, includeFileList=[], excludeFileList=[]):
         '''
         Open the synthesis tar file and check that the items in
@@ -88,7 +74,7 @@ class TestSynthesiserInterface(unittest.TestCase):
         root = self.cli.project.get_synthesis_directory()
         # Expect to find a single tar file in the synthesis directory:
         tarFiles = list(filter(lambda x: x.endswith('.tar'), os.listdir(root)))
-        self.assertEqual(len(tarFiles), 1)
+        self.assertEqual(len(tarFiles), 1, msg='Only one archive expected.')
         # Open the tar file
         with tarfile.TarFile(
             os.path.join(root, tarFiles[0]),
@@ -103,14 +89,16 @@ class TestSynthesiserInterface(unittest.TestCase):
                 self.assertTrue(
                     os.path.normpath(
                         os.path.join(subroot, filename)
-                    ) in fileList
+                    ) in fileList,
+                    msg='{0} not found.'.format(filename)
                 )
             # Check that the items in excludeFileList do not appear in fileList
             for filename in excludeFileList:
                 self.assertFalse(
                     os.path.normpath(
                         os.path.join(subroot, filename)
-                    ) in fileList
+                    ) in fileList,
+                    msg='{0} should not exist.'.format(filename)
                 )
 
 
@@ -196,7 +184,6 @@ class TestMaxHoldSynthesisQuartus(TestSynthesiserInterface):
         ]
         exclude_outputs = []
         self.checkTarFile(expected_outputs, exclude_outputs)
-
 
 
 if __name__ == '__main__':

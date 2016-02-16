@@ -30,7 +30,9 @@ class TestSimulatorInterface(unittest.TestCase):
         )
         if simulator is None or not simulator.installed:
             raise unittest.SkipTest(
-                'Cannot run this test as no simulator is available.'
+                'Cannot run this test as {0} is not available.'.format(
+                    simulator.name
+                )
             )
 
     def checkCompile(self):
@@ -40,7 +42,10 @@ class TestSimulatorInterface(unittest.TestCase):
     def setUp(self):
         if self.project_path is None:
             return
-        self.assertTrue(os.path.exists(self.project_path))
+        self.assertTrue(
+            os.path.exists(self.project_path),
+            msg='Could not find the project file.'
+        )
         self.cli = cli.CommandLine()
         self.cli.do_load_project(self.project_path)
         # Override the project simulator config

@@ -353,6 +353,10 @@ class TestUninitialisedProjectCLI(TestProjectInterface):
         cli = CommandLine()
         cli.do_synthesise('')
 
+    def test_simulate(self):
+        cli = CommandLine()
+        cli.do_simulate('')
+
     def test_show_config(self):
         cli = CommandLine()
         cli.do_show_config('')
