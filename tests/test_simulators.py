@@ -137,7 +137,7 @@ class TestExampleProjectsMaxHoldVhdlGhdl(TestExampleProjectsMaxHoldModelsim):
 
 
 class TestExampleProjectsMaxHoldSvIcarus(TestExampleProjectsMaxHoldModelsim):
-    simulator_name = 'ghdl'
+    simulator_name = 'iverilog'
     root = os.path.join('examples', 'max_hold')
     project_path = os.path.join(root, 'max_hold_sv.xml')
 
