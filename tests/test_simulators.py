@@ -3,6 +3,7 @@ import os
 import re
 import logging
 import sys
+import shutil
 
 testroot = os.path.dirname(__file__) or '.'
 sys.path.insert(0, os.path.abspath(os.path.join(testroot, os.path.pardir)))
@@ -19,12 +20,26 @@ class BaseTests:
         project_path = None
         simulator_name = ''
 
-        def preTestCheck(self):
-            """
-            Check that the required dependencies are available before running the
-            tests. If the user does not have the required simulator installed we
-            cannot run these unit tests.
-            """
+        def setUp(self):
+            if self.project_path is None:
+                return
+            self.assertTrue(
+                os.path.exists(self.project_path),
+                msg='Could not find the project file.'
+            )
+            self.cli = cli.CommandLine()
+            self.cli.do_load_project(self.project_path)
+
+            # Override the project simulator config
+            self.cli.project.add_config(
+                'simulator',
+                self.simulator_name,
+                force=True
+            )
+
+            # Check that the required dependencies are available before running
+            # the tests. If the user does not have the required simulator
+            # installed we cannot run these unit tests.
             simulator = self.cli.project.get_available_simulators().get(
                 self.cli.project.get_simulation_tool_name(),
                 None
@@ -36,68 +51,43 @@ class BaseTests:
                     )
                 )
 
-        def checkCompile(self):
-            self.clearCache()
-            self.compileDesignFiles()
+        def tearDown(self):
+            root = self.cli.project.get_simulation_directory()
+            for f in os.listdir(root):
+                path = os.path.join(root, f)
+                if not os.path.isdir(path):
+                    if os.path.basename(path) != '.gitignore':
+                        os.remove(path)
+                else:
+                    shutil.rmtree(path)
 
-        def setUp(self):
-            if self.project_path is None:
-                return
-            self.assertTrue(
-                os.path.exists(self.project_path),
-                msg='Could not find the project file.'
-            )
-            self.cli = cli.CommandLine()
-            self.cli.do_load_project(self.project_path)
-            # Override the project simulator config
-            self.cli.project.add_config(
-                'simulator',
-                self.simulator_name,
-                force=True
-            )
-
-        def clearCache(self):
-            self.cli.do_clean('')
-
-        def add_tests(self, command=''):
+        def add_unit_selection(self, command=''):
             self.cli.do_add_tests(command)
 
-        def remove_tests(self, command=''):
+        def remove_unit_selection(self, command=''):
             self.cli.do_remove_tests(command)
 
-        def run_tests(self, command=''):
+        def run_unit_selection(self, command=''):
             self.cli.do_run_tests(command)
 
-        def checkUnitTestFramework(self):
-            self.compileDesignFiles()
-            self.add_tests('1-50')
+        def check_unit_framework(self):
+            self.add_unit_selection('1-50')
             slen = len(self.cli.test_set)
             if slen > 0:
-                self.remove_tests('1')
+                self.remove_unit_selection('1')
                 self.assertEqual(len(self.cli.test_set), slen-1)
-                self.add_tests('1')
+                self.add_unit_selection('1')
                 self.assertEqual(len(self.cli.test_set), slen)
             if len(self.cli.project.get_tests()) > 0:
-                self.run_tests()
-                self.checkTestReport(
+                self.run_unit_selection()
+                self.check_report(
                     path=os.path.join(
                         self.cli.project.get_simulation_directory(),
                         'report.html'
                     )
                 )
 
-        def compileDesignFiles(self):
-            # Make sure the design files are compiled
-            self.clearCache()
-            self.cli.do_compile('')
-
-        def tearDown(self):
-            root = self.cli.project.get_synthesis_directory()
-            for f in os.listdir(root):
-                if f.endswith('.tar'):
-                    os.remove(os.path.join(root, f))
-
-        def checkTestReport(self, path='report.html'):
+        def check_report(self, path='report.html'):
             self.assertTrue(os.path.exists(path))
             with open(path, 'r') as f:
                 data = f.read()
@@ -116,10 +106,10 @@ class BaseTests:
                 failures = int(failures.group(1))
                 self.assertEqual(failures, 0)
 
-
 ###############################################################################
 # Test the simulator wrappers using the Max Hold (VHDL) example
 ###############################################################################
+
 
 class TestExampleProjectsMaxHoldModelsim(BaseTests.SimulatorInterfaceChecks):
 
@@ -128,12 +118,10 @@ class TestExampleProjectsMaxHoldModelsim(BaseTests.SimulatorInterfaceChecks):
     project_path = os.path.join(root, 'max_hold.xml')
 
     def test_compile(self):
-        self.preTestCheck()
-        self.checkCompile()
+        self.cli.do_compile('')
 
     def test_unit_test_framework(self):
-        self.preTestCheck()
-        self.checkUnitTestFramework()
+        self.check_unit_framework()
 
 
 class TestExampleProjectsMaxHoldVhdlIsim(TestExampleProjectsMaxHoldModelsim):
