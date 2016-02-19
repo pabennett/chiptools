@@ -186,7 +186,7 @@ def process(data, path):
 
 
 class TestXmlProjectLoading(TestProjectInterface):
-    def testSynthesisDirectory(self):
+    def test_synthesis_directory(self):
         project = Project()
         project.load_project(self.project_path)
         abs_path = os.path.join(
@@ -195,7 +195,7 @@ class TestXmlProjectLoading(TestProjectInterface):
         )
         self.assertEqual(project.get_synthesis_directory(), abs_path)
 
-    def testSimulationDirectory(self):
+    def test_simulation_directory(self):
         project = Project()
         project.load_project(self.project_path)
         abs_path = os.path.join(
@@ -204,11 +204,11 @@ class TestXmlProjectLoading(TestProjectInterface):
         )
         self.assertEqual(project.get_simulation_directory(), abs_path)
 
-    def testProjectLoad(self):
+    def test_project_load(self):
         project = Project()
         project.load_project(self.project_path)
 
-    def testProjectPart(self):
+    def test_project_part(self):
         project = Project()
         project.load_project(self.project_path)
         # Check project part
@@ -217,7 +217,7 @@ class TestXmlProjectLoading(TestProjectInterface):
             project.get_fpga_part()
         )
 
-    def testSimulationToolName(self):
+    def test_simulation_Tool_name(self):
         project = Project()
         project.load_project(self.project_path)
         # Check simulation tool name
@@ -226,7 +226,7 @@ class TestXmlProjectLoading(TestProjectInterface):
             project.get_simulation_tool_name()
         )
 
-    def testSynthesisToolName(self):
+    def test_synthesis_tool_name(self):
         project = Project()
         project.load_project(self.project_path)
         # Check synthesis tool name
@@ -235,7 +235,7 @@ class TestXmlProjectLoading(TestProjectInterface):
             project.get_synthesis_tool_name()
         )
 
-    def testFileSet(self):
+    def test_file_set(self):
         project = Project()
         project.load_project(self.project_path)
         # Check the file set loaded from the project
@@ -250,7 +250,7 @@ class TestXmlProjectLoading(TestProjectInterface):
             sorted([os.path.basename(f.path) for f in project.get_files()]),
         )
 
-    def testProjectConstraints(self):
+    def test_project_constraints(self):
         project = Project()
         project.load_project(self.project_path)
         # Check the project constraints
@@ -259,7 +259,7 @@ class TestXmlProjectLoading(TestProjectInterface):
             [os.path.basename(c.path) for c in project.get_constraints()],
         )
 
-    def testGenerics(self):
+    def test_generics(self):
         project = Project()
         project.load_project(self.project_path)
         # Check the synthesis generics
@@ -268,7 +268,7 @@ class TestXmlProjectLoading(TestProjectInterface):
             project.get_generics(),
         )
 
-    def testReporter(self):
+    def test_reporter(self):
         project = Project()
         project.load_project(self.project_path)
         # Check the synthesis reporter
@@ -276,7 +276,7 @@ class TestXmlProjectLoading(TestProjectInterface):
             callable(project.get_reporter())
         )
 
-    def testPreprocessor(self):
+    def test_preprocessor(self):
         project = Project()
         project.load_project(self.project_path)
         files = project.get_files()
@@ -291,7 +291,7 @@ class TestXmlProjectLoading(TestProjectInterface):
 
 class TestManualProjectInterface(TestProjectInterface):
 
-    def testFileSet(self):
+    def test_file_set(self):
         project = Project()
 
         expected_files = []
@@ -306,7 +306,7 @@ class TestManualProjectInterface(TestProjectInterface):
             sorted([os.path.basename(f.path) for f in project.get_files()]),
         )
 
-    def testAddAll(self):
+    def test_add_all(self):
         project = Project()
         expected_files = []
         expected_libs = []
@@ -331,7 +331,7 @@ class TestManualProjectInterface(TestProjectInterface):
             sorted(list(project.get_libraries()),)
         )
 
-    def testReporter(self):
+    def test_reporter(self):
         project = Project()
         project.add_config('reporter', self.reporter_path)
         # Check the synthesis reporter
@@ -392,7 +392,7 @@ def report_spelled_wrong(x):
     pass
 """
 
-    def testReporter(self):
+    def test_reporter(self):
         """If the user incorrectly defines a reporter it should fail gracefully
         and return None."""
         project = Project()
@@ -402,14 +402,14 @@ def report_spelled_wrong(x):
         )
 
 
-class TestReporterSyntaxError(TestProjectInterface):
+class test_reporterSyntaxError(TestProjectInterface):
     reporter_data = """
 dfe reporter()){
     oops;
 }
 """
 
-    def testReporter(self):
+    def test_reporter(self):
         """If the user incorrectly defines a reporter it should fail gracefully
         and return None."""
         project = Project()
