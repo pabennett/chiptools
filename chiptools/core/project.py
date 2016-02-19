@@ -311,19 +311,16 @@ class Project:
         for file_object in files:
             # Preprocess the file if it has a preprocessor
             if file_object.preprocessor:
-                try:
-                    if Preprocessor.process(
-                        file_object.path,
-                        file_object.preprocessor
-                    ):
-                        log.info(
-                            'Executed preprocessor {0} on file {1}'.format(
-                                os.path.basename(file_object.preprocessor),
-                                file_object.path
-                            )
+                if Preprocessor.process(
+                    file_object.path,
+                    file_object.preprocessor
+                ):
+                    log.info(
+                        'Executed preprocessor {0} on file {1}'.format(
+                            os.path.basename(file_object.preprocessor),
+                            file_object.path
                         )
-                except:
-                    log.error(traceback.format_exc())
+                    )
 
     def compile(self, tool_name=None):
         """
@@ -369,22 +366,15 @@ class Project:
             simulation_tool.name
         )
         # Do a compilation of the design to ensure the libraries are up to date
-        try:
-            simulation_tool.compile_project(
-                includes=includes
-            )
-        except:
-            log.error(traceback.format_exc())
-            log.error("Compilation aborted due to previous error")
-            return False
-
+        simulation_tool.compile_project(
+            includes=includes
+        )
         includes.update(kwargs.get('includes', {}))
         kwargs.update(
             {
                 'includes': includes,
             }
         )
-
         log.info('Simulating entity ' + entity + ' in library ' + library)
         simulation_tool.simulate(library, entity, **kwargs)
 
@@ -397,21 +387,11 @@ class Project:
         """
         # Run the preprocessors prior to build.
         self.run_preprocessors()
-
-        try:
-            synthesis_tool = self._get_tool(tool_name, tool_type='synthesis')
-            log.info(
-                'Synthesising entity ' + entity + ' in library ' + library
-            )
-            try:
-                synthesis_tool.synthesise(library, entity, fpga_part)
-            except exceptions.SynthesisException:
-                log.error(
-                    'Synthesis failed, refer to log for more information.'
-                )
-                return
-        except:
-            log.error(traceback.format_exc())
+        synthesis_tool = self._get_tool(tool_name, tool_type='synthesis')
+        log.info(
+            'Synthesising entity ' + entity + ' in library ' + library
+        )
+        synthesis_tool.synthesise(library, entity, fpga_part)
 
     def get_tests(self):
         """
@@ -435,16 +415,12 @@ class Project:
         """
         simulation_tool = self._get_tool(tool_name, tool_type='simulation')
         # First compile the project
-        try:
-            simulation_tool.compile_project(
-                includes=self.options.get_simulator_library_dependencies(
-                    simulation_tool.name
-                )
+
+        simulation_tool.compile_project(
+            includes=self.options.get_simulator_library_dependencies(
+                simulation_tool.name
             )
-        except:
-            log.error(traceback.format_exc())
-            log.error("Compilation aborted due to previous error")
-            return
+        )
 
         suite = unittest.TestSuite()
         tests = []
@@ -484,21 +460,17 @@ class Project:
                 log.info('Added ' + str(test) + ' to testsuite')
 
         log.info('Running testsuite...')
-        try:
-            # TODO: Allow HTML or Console selection
-            if True:
-                with open(
-                    os.path.join(
-                        self.get_simulation_directory(), 'report.html'
-                    ), 'w'
-                ) as report:
-                    HTMLTestRunner.HTMLTestRunner(
-                        verbosity=2,
-                        stream=report
-                    ).run(suite)
-            else:
-                unittest.TextTestRunner(verbosity=2).run(suite)
-        except Exception:
-            log.error('An error was encountered when running the TestSuite')
-            log.error(traceback.format_exc())
+        # TODO: Allow HTML or Console selection
+        if True:
+            with open(
+                os.path.join(
+                    self.get_simulation_directory(), 'report.html'
+                ), 'w'
+            ) as report:
+                HTMLTestRunner.HTMLTestRunner(
+                    verbosity=2,
+                    stream=report
+                ).run(suite)
+        else:
+            unittest.TextTestRunner(verbosity=2).run(suite)
         log.info('...done')
