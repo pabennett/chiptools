@@ -6,8 +6,14 @@ configuration settings with error checking and file-modification checking.
 
 The path to the system configuration file is hard-coded into options_path.
 """
+import sys
 
-import configparser
+if sys.version_info < (3, 0, 0):
+    # Python 2
+    import ConfigParser as configparser
+else:
+    # Python 3
+    import configparser
 import os
 import logging
 import traceback
@@ -63,7 +69,6 @@ class Options:
         self.synthesisers = {}
         self.simulators = {}
         self.simulator_libraries = {}
-        super(Options, self).__init__()
         self.options_md5 = None
         log.debug('Initialising options parser')
         self._options = configparser.ConfigParser()
