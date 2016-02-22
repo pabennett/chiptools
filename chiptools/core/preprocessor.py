@@ -28,6 +28,15 @@ def get_preprocessor(path):
         log.error('File not found, aborting preprocessor load: ' + str(path))
         return
     try:
+        if sys.version_info < (3, 0, 0):
+            # imp.load_source in Python2 will try to use a matching .pyc if 
+            # found. We do not want this behavior so delete the .pyc:
+            base = os.path.basename(path)
+            root = os.path.dirname(path)
+            name, ext = os.path.splitext(base)
+            pyc_path = os.path.join(root, name + '.pyc')
+            if os.path.exists(pyc_path):
+                os.remove(pyc_path)
         # We are loading unchecked user code here, the import stage is
         # exception checked.
         imp.load_source(preprocessor_temporary_module, path)
@@ -62,6 +71,7 @@ class Preprocessor:
         """
         processor = get_preprocessor(processor_path)
         if processor is None:
+            print(processor_path + ' not found ')
             return False
         try:
             data = cls.get_file_data(path)
