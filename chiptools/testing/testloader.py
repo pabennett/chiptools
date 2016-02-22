@@ -2,7 +2,11 @@ import unittest
 import logging
 import traceback
 import os
-import importlib.machinery
+import sys
+if sys.version_info < (3, 0, 0):
+    import imp
+else:
+    import importlib.machinery
 
 from chiptools.common import utils
 
@@ -101,14 +105,22 @@ def load_tests(
     log.debug('Loading test package: ' + path + '...')
 
     try:
-        module_loader = importlib.machinery.SourceFileLoader(
-            'chiptools_tests_' + os.path.basename(path).split('.')[0],
-            path
-        )
         test_loader = unittest.TestLoader()
-        suite = test_loader.loadTestsFromModule(
-            module_loader.load_module()
-        )
+        # Load modules with support for Python 2 or 3
+        if sys.version_info < (3, 0, 0):
+            module = imp.load_source(
+                'chiptools_tests_' + os.path.basename(path).split('.')[0],
+                path
+            )
+            suite = test_loader.loadTestsFromModule(module)
+        else:
+            module_loader = importlib.machinery.SourceFileLoader(
+                'chiptools_tests_' + os.path.basename(path).split('.')[0],
+                path
+            )
+            suite = test_loader.loadTestsFromModule(
+                module_loader.load_module()
+            )
     except:
         log.error(
             'The module could not be imported due to the ' +
