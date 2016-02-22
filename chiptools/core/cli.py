@@ -42,7 +42,7 @@ INTRO_TEMPL = (
 )
 
 
-class CommandLine(cmd.Cmd):
+class CommandLine(cmd.Cmd, object):
     def __init__(self, project=None):
         super(CommandLine, self).__init__()
         prj = ''
