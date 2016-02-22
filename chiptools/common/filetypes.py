@@ -1,23 +1,33 @@
 import os
 import re
-from enum import Enum
+import sys
 import logging
 
 log = logging.getLogger(__name__)
 
+filetypes = [
+    'Unknown',
+    'VHDL',             # VHDL
+    'Verilog',          # Verilog
+    'SystemVerilog',    # Verilog (SV)
+    'NGCNetlist',       # Netlist
+    'TCL',              # TCL
+    'UCF',              # Universal constraints format
+    'SDC',              # Synopsis design constraints
+    'Python',
+    'VivadoIp',
+    'VivadoXDC',
+]
 
-class FileType(Enum):
-    Unknown = 0
-    VHDL = 1  # VHDL
-    Verilog = 2  # Verilog
-    SystemVerilog = 3  # Verilog (SV)
-    NGCNetlist = 4  # Netlist
-    TCL = 5  # TCL
-    UCF = 6  # Universal constraints format
-    SDC = 7  # Synopsis design constraints
-    Python = 8
-    VivadoIp = 9
-    VivadoXDC = 10
+try:
+    from Enum import enum
+    FileType = Enum('FileType', ' '.join(f for f in filetypes))
+except ImportError:
+    # Enum module not supported, roll our own.
+    def enum(*sequence, **names):
+        enums = dict(zip(sequence, range(len(sequence))), **names)
+        return type('Enum', (), enums)
+    FileType = enum(*filetypes)
 
 # Mapping of file extensions to FileType objects
 fileExtensionsLookup = {

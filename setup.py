@@ -93,9 +93,6 @@ extras_require = {
 if sys.platform == 'win32':
     requires.append('colorama')
 
-if sys.version_info < (3, 0, 0):
-    # We can support Python2 by installing backported modules:
-    requires.append('enum34')
 setup(
     name="ChipTools",
     version=getVersion(),
