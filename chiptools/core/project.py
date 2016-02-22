@@ -25,7 +25,6 @@ log = logging.getLogger(__name__)
 
 class Project:
     def __init__(self):
-        super(Project, self).__init__()
         self.initialise()
 
     def initialise(self):
