@@ -42,7 +42,6 @@ class FileCache:
         Create a FileCache instance using the *projectPath* as the basis for
         the cache file name and root directory.
         """
-        super(FileCache, self).__init__()
         self.cache_path = cache_path + self.cache_file_name
         try:
             self.load_cache()
