@@ -9,6 +9,7 @@ import unittest
 import os
 import logging
 import sys
+import re
 
 testroot = os.path.dirname(__file__) or '.'
 sys.path.insert(0, os.path.abspath(os.path.join(testroot, os.path.pardir)))
@@ -22,8 +23,7 @@ logging.config.dictConfig({'version': 1})
 
 class TestProjectInterface(unittest.TestCase):
 
-    vhdl_file_data = """
-library ieee;
+    vhdl_file_data = """library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
 entity %(entity)s is
@@ -71,9 +71,12 @@ def report(x):
     pass
 """
     preprocessor_data = """
+import time
 def process(data, path):
-    with open(path, 'r') as f:
-        f.read()
+    with open(path, 'w') as f:
+        f.write('-- Preprocessed at ' + time.strftime('%H:%M:%S'))
+        for line in data:
+            f.write(line)
 """
 
     root = os.path.join('tests', 'testprojects', 'project_checks')
@@ -287,6 +290,20 @@ class TestXmlProjectLoading(TestProjectInterface):
         )
         self.assertTrue(len(preprocessors) > 0)
         project.run_preprocessors()
+        regex = re.compile('-- Preprocessed at (\d+){2}:(\d+){2}:(\d+){2}')
+        for libname in self.project_structure.keys():
+            files = self.project_structure[libname]
+            for path in files:
+                path = os.path.join(self.root, libname, path)
+                with open(path, 'r') as f:
+                    data = f.readlines()
+                    match = regex.match(data[0])
+                    self.assertIsNotNone(
+                        match,
+                        msg='File {0} was not correctly preprocessed.'.format(
+                            path
+                        )
+                    )
 
 
 class TestManualProjectInterface(TestProjectInterface):
@@ -402,7 +419,7 @@ def report_spelled_wrong(x):
         )
 
 
-class test_reporterSyntaxError(TestProjectInterface):
+class TestReporterSyntaxError(TestProjectInterface):
     reporter_data = """
 dfe reporter()){
     oops;
@@ -418,6 +435,38 @@ dfe reporter()){
             project.get_reporter()
         )
 
+class TestPreprocesorSyntaxError(TestProjectInterface):
+    preprocessor_data = """
+dfe preprocessor(a, b, c):
+    oops;
+"""
+
+    def test_preprocessor(self):
+        """Invalid preprocessors should not be executed on files."""
+        project = Project()
+        project.load_project(self.project_path)
+        files = project.get_files()
+        preprocessors = list(
+            filter(
+                lambda x: os.path.exists(x.preprocessor), files
+            )
+        )
+        self.assertTrue(len(preprocessors) > 0)
+        project.run_preprocessors()
+        regex = re.compile('library ieee;')
+        for libname in self.project_structure.keys():
+            files = self.project_structure[libname]
+            for path in files:
+                path = os.path.join(self.root, libname, path)
+                with open(path, 'r') as f:
+                    data = f.readlines()
+                    match = regex.match(data[0])
+                    self.assertIsNotNone(
+                        match,
+                        msg='File {0} was not correctly preserved.'.format(
+                            path
+                        )
+                    )
 
 if __name__ == '__main__':
     unittest.main()
