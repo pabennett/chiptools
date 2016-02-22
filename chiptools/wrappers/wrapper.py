@@ -1,7 +1,13 @@
 import logging
 import traceback
 import os
-import importlib.machinery
+import sys
+if sys.version_info < (3, 0, 0):
+    # Python 2 support
+    import imp
+else:
+    # Python 3
+    import importlib.machinery
 import inspect
 
 from chiptools.wrappers.simulator import Simulator
@@ -19,25 +25,43 @@ def plugin_discovery(
     result = {}
     for path in os.listdir(plugin_directory):
         if path.endswith('.py'):
-            # Use importlib to import any Python file discovered in the
-            # given plugin directory. Plugins that contain syntax errors or
-            # cause other exceptions when imported will be skipped.
-            loader = importlib.machinery.SourceFileLoader(
-                'chiptools_wrappers_' + plugin_subclass.__name__ + '_' +
-                os.path.basename(path).split('.')[0],
-                os.path.join(plugin_directory, path),
-            )
-            try:
-                module = loader.load_module()
-            except:
-                log.error(
-                    'Plugin module ' +
-                    '{0} contains errors and will be disabled:'.format(
-                        os.path.basename(path)
+            # Load modules with support for Python 2 or 3
+            if sys.version_info < (3, 0, 0):
+                try:
+                    module = imp.load_source(
+                        'chiptools_wrappers_' + plugin_subclass.__name__ + '_' +
+                        os.path.basename(path).split('.')[0],
+                        os.path.join(plugin_directory, path),
                     )
+                except:
+                    log.error(
+                        'Plugin module ' +
+                        '{0} contains errors and will be disabled:'.format(
+                            os.path.basename(path)
+                        )
+                    )
+                    log.error(traceback.format_exc())
+                    continue
+            else:
+                # Use importlib to import any Python file discovered in the
+                # given plugin directory. Plugins that contain syntax errors or
+                # cause other exceptions when imported will be skipped.
+                loader = importlib.machinery.SourceFileLoader(
+                    'chiptools_wrappers_' + plugin_subclass.__name__ + '_' +
+                    os.path.basename(path).split('.')[0],
+                    os.path.join(plugin_directory, path),
                 )
-                log.error(traceback.format_exc())
-                continue
+                try:
+                    module = loader.load_module()
+                except:
+                    log.error(
+                        'Plugin module ' +
+                        '{0} contains errors and will be disabled:'.format(
+                            os.path.basename(path)
+                        )
+                    )
+                    log.error(traceback.format_exc())
+                    continue
             # Search all members of the loaded module, add any member that
             # which subclasses ToolchainBase and the given plugin_subclass to
             # the result dictionary.
