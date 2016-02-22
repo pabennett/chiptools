@@ -17,7 +17,7 @@ from chiptools.common.utils import execute
 log = logging.getLogger(__name__)
 
 
-class ToolchainBase:
+class ToolchainBase(object):
 
     executables = []
 
