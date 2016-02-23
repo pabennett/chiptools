@@ -66,6 +66,12 @@ end RTL;
 </project>
 """
 
+    invalid_project_data = """
+<project>
+    <not valid!>;
+</project>
+    """
+
     reporter_data = """
 def report(x):
     pass
@@ -81,6 +87,7 @@ def process(data, path):
 
     root = os.path.join('tests', 'testprojects', 'project_checks')
     project_path = os.path.join(root, 'dummy.xml')
+    invalid_project_path = os.path.join(root, 'invalid.xml')
     reporter_path = os.path.join(root, 'reporter.py')
     preprocessor_path = os.path.join(root, 'preprocessor.py')
     synthesis_directory = 'synthesis'
@@ -154,6 +161,9 @@ def process(data, path):
 
         with open(self.preprocessor_path, 'w') as f:
             f.write(self.preprocessor_data)
+
+        with open(self.invalid_project_path, 'w') as f:
+            f.write(self.invalid_project_data)
 
         with open(self.project_path, 'w') as f:
             f.write(
@@ -402,6 +412,25 @@ class TestUninitialisedProjectCLI(TestProjectInterface):
         cli = CommandLine()
         cli.do_show_synthesis_fileset('')
 
+    def test_plugins(self):
+        cli = CommandLine()
+        cli.do_plugins('')
+
+class TestCLI(TestProjectInterface):
+    def test_missing_project(self):
+        """Test the load_project command with an invalid path."""
+        cli = CommandLine()
+        cli.do_load_project('invalid/project/path')
+
+    def test_invalid_project(self):
+        """Test the load_project command with an invalid project."""
+        cli = CommandLine()
+        cli.do_load_project(self.invalid_project_path)
+
+    def test_synthesis_fileset(self):
+        cli = CommandLine()
+        cli.do_load_project(self.project_path)
+        cli.do_show_synthesis_fileset('')
 
 class TestMissingReporter(TestProjectInterface):
     reporter_data = """

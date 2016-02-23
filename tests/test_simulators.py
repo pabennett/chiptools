@@ -72,6 +72,7 @@ class BaseTests:
             self.cli.do_run_tests(command)
 
         def check_unit_framework(self):
+            self.cli.do_show_tests('')
             self.add_unit_selection('1-50')
             slen = len(self.cli.test_set)
             if slen > 0:
