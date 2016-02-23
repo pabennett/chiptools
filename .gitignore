@@ -4,3 +4,7 @@ docs/_build
 docs/rce
 *.sublime-project
 *.sublime-workspace
+*.swp
+.coverage
+coverage.xml
+nosetests.xml
