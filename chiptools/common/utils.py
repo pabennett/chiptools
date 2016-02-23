@@ -24,18 +24,21 @@ def iterate_tests(test_suite_or_case):
                 yield subtest
 
 
-def getDateString():
+def get_date_string():
+    """
+    Return a pretty formatted date string to indicate the time of an event.
+    """
     return time.strftime('%d, %b %y at %H:%M:%S')
 
 
-def parseRange(astr):
+def parse_range(astr):
     """
     Parse the input string numeric range and return a set of numbers.
-    >>> parseRange('1-3, 5, 8, 10')
+    >>> parse_range('1-3, 5, 8, 10')
     [1, 2, 3, 5, 8, 10]
-    >>> parseRange('1, 2, 3, 4, 5')
+    >>> parse_range('1, 2, 3, 4, 5')
     [1, 2, 3, 4, 5]
-    >>> parseRange('1-5, 9-5') # Negative ranges are ignored
+    >>> parse_range('1-5, 9-5') # Negative ranges are ignored
     [1, 2, 3, 4, 5]
     """
     result = set()
@@ -45,25 +48,17 @@ def parseRange(astr):
     return sorted(result)
 
 
-def relativePathToAbs(path, root):
-    """If the path is relative convert it into an absolute path
-    >>> relativePathToAbs('../test.txt', 'c:/folder')
-    'c:\\\\test.txt'
-    >>> relativePathToAbs('c:/test.txt', 'c:/folder')
-    'c:/test.txt'
-    >>> relativePathToAbs('../../test.txt', 'c:/folder/f1/f2/')
-    'c:\\\\folder\\\\test.txt'
+def relative_path_to_abs(path, root=os.getcwd()):
     """
+    If the path is relative convert it into an absolute path.  This is the same
+    as calling os.path.abspath(path), but with an option to override the
+    default root of os.getcwd() and with normalisation and expansion of
+    environment variables on the input path.
+    """
+    path = os.path.normpath(os.path.expandvars(path))
     if not os.path.isabs(path):
         return os.path.normpath(os.path.join(root, path))
     return path
-
-
-def format_paths(attribute, root):
-    return relativePathToAbs(
-        os.path.normpath(os.path.expandvars(attribute)),
-        root
-    )
 
 
 def time_delta_string(start_time, end_time):

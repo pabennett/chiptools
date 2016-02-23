@@ -177,11 +177,11 @@ class XmlProjectParser:
 
     # Process each of the file attributes using the following functions
     XML_NODE_PROCESSOR = {
-        ProjectAttributes.XML_ATTRIBUTE_PATH: utils.format_paths,
-        ProjectAttributes.ATTRIBUTE_SIM_DIR: utils.format_paths,
-        ProjectAttributes.ATTRIBUTE_SYNTH_DIR: utils.format_paths,
-        ProjectAttributes.XML_ATTRIBUTE_PREPROCESSOR: utils.format_paths,
-        ProjectAttributes.ATTRIBUTE_REPORTER: utils.format_paths,
+        ProjectAttributes.XML_ATTRIBUTE_PATH: utils.relative_path_to_abs,
+        ProjectAttributes.ATTRIBUTE_SIM_DIR: utils.relative_path_to_abs,
+        ProjectAttributes.ATTRIBUTE_SYNTH_DIR: utils.relative_path_to_abs,
+        ProjectAttributes.XML_ATTRIBUTE_PREPROCESSOR: utils.relative_path_to_abs,
+        ProjectAttributes.ATTRIBUTE_REPORTER: utils.relative_path_to_abs,
         ProjectAttributes.XML_ATTRIBUTE_SYNTHESIS:
             lambda x, root: x.lower() != 'false',
         ProjectAttributes.ATTRIBUTE_SIM_TOOL: lambda x, root: x,

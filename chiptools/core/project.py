@@ -55,7 +55,7 @@ class Project:
 
     def add_file(self, path, library='work', **attribs):
         """Add the given file to the project."""
-        path = utils.relativePathToAbs(path, self.root)
+        path = utils.relative_path_to_abs(path, self.root)
         # Ensure library names are lower case
         library = library.lower()
         # Default synthesis to true
@@ -83,12 +83,12 @@ class Project:
 
     def add_constraints(self, path, **attribs):
         """Add the given constraints file to the project."""
-        path = utils.relativePathToAbs(path, self.root)
+        path = utils.relative_path_to_abs(path, self.root)
         self.constraints.append(Constraints(path=path, **attribs))
 
     def add_unittest(self, path, **attribs):
         """Add the given TestSuite file to the project."""
-        path = utils.relativePathToAbs(path, self.root)
+        path = utils.relative_path_to_abs(path, self.root)
         unit = UnitTestFile(path=path, **attribs)
         # Perform TestSuite loading on the supplied path
         if os.path.exists(path):

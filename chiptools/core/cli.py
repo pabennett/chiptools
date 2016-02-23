@@ -454,7 +454,7 @@ class CommandLine(cmd.Cmd, object):
         the remove_tests command.
         """
         try:
-            ids = utils.parseRange(command)
+            ids = utils.parse_range(command)
         except ValueError:
             log.error('Invalid test range specified: ' + command)
             return
@@ -476,7 +476,7 @@ class CommandLine(cmd.Cmd, object):
         command or add tests by issuing the add_tests command.
         """
         try:
-            ids = utils.parseRange(command)
+            ids = utils.parse_range(command)
         except ValueError:
             log.error('Invalid test range specified: ' + command)
             return
