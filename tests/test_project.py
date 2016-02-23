@@ -79,10 +79,8 @@ def report(x):
     preprocessor_data = """
 import time
 def process(data, path):
-    with open(path, 'w') as f:
-        f.write('-- Preprocessed at ' + time.strftime('%H:%M:%S'))
-        for line in data:
-            f.write(line)
+    data = ['-- Preprocessed at ' + time.strftime('%H:%M:%S')] + data
+    return data
 """
 
     root = os.path.join('tests', 'testprojects', 'project_checks')
