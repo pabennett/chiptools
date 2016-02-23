@@ -4,6 +4,7 @@ import re
 import logging
 import sys
 import shutil
+import hashlib
 
 testroot = os.path.dirname(__file__) or '.'
 sys.path.insert(0, os.path.abspath(os.path.join(testroot, os.path.pardir)))
@@ -116,9 +117,21 @@ class TestExampleProjectsMaxHoldModelsim(BaseTests.SimulatorInterfaceChecks):
     simulator_name = 'modelsim'
     root = os.path.join('examples', 'max_hold')
     project_path = os.path.join(root, 'max_hold.xml')
+    cache_path = os.path.join(root, '.max_hold_compilation.cache')
 
     def test_compile(self):
         self.cli.do_compile('')
+
+    def test_cached_compile(self):
+        self.cli.do_compile('')
+        self.assertTrue(os.path.exists(self.cache_path))
+        # Get the cache checksum
+        md5 = hashlib.md5(open(self.cache_path, 'rb').read()).hexdigest()
+        # Now recompile the project to check the caching
+        self.cli.do_compile('')
+        # Check that the cache has not changed
+        md5new = hashlib.md5(open(self.cache_path, 'rb').read()).hexdigest()
+        self.assertEqual(md5, md5new)
 
     def test_unit_test_framework(self):
         self.check_unit_framework()
