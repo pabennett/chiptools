@@ -20,7 +20,7 @@ filetypes = [
 ]
 
 try:
-    from Enum import enum
+    from enum import Enum
     FileType = Enum('FileType', ' '.join(f for f in filetypes))
 except ImportError:
     # Enum module not supported, roll our own.
