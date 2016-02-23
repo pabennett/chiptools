@@ -124,7 +124,15 @@ class TestExampleProjectsMaxHoldModelsim(BaseTests.SimulatorInterfaceChecks):
         self.cli.do_compile('')
 
     def test_cached_compile(self):
+        # Clean uninitialised workspace
+        self.cli.do_clean('')
+        # Compile the project
         self.cli.do_compile('')
+        # Clear the compilation cache
+        self.cli.do_clean('')
+        # Compile the project
+        self.cli.do_compile('')
+        # Check cache exists
         self.assertTrue(os.path.exists(self.cache_path))
         # Get the cache checksum
         md5 = hashlib.md5(open(self.cache_path, 'rb').read()).hexdigest()
