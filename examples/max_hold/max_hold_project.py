@@ -17,7 +17,7 @@ project = Project()
 config = {
     'simulation_directory': 'simulation',
     'synthesis_directory': 'synthesis',
-    'simulator': 'modelsim',
+    'simulator': 'ghdl',
     'synthesiser': 'ise',
     'part': 'xc7a100tcsg324-1',
 }
@@ -59,32 +59,25 @@ project.add_file(
     synthesise=False
 )
 
-interactive = False
+if __name__ == '__main__':
 
-if interactive:
-    # ChipTools provides a command line interface to allow you to perform
-    # actions on the project such as synthesis and simulation interactively.
-    # It can be launched by importing the CommandLine from chiptools.core.cli
-    # and executing the cmdloop() method - the project is passed to the
-    # CommandLine constructor. Launch the ChipTools command line with the
-    # project we just configured:
-    from chiptools.core.cli import CommandLine
-    CommandLine(project).cmdloop()
-else:
-    # actions can be performed on the project directly using the simulate,
-    # synthesise or run_tests methods:
-    # Simulate the project interactively by presenting the simulator GUI:
-    #project.simulate(
-    #    library='lib_tb_max_hold',
-    #    entity='tb_max_hold',
-    #    gui=True,
-    #    tool_name='modelsim'
-    #)
-    ## Run the automated unit tests on the project:
-    #project.run_tests(tool_name='isim')
-    ## Synthesise the project:
-    project.synthesise(
-        library='lib_max_hold',
-        entity='max_hold',
-        tool_name='vivado'
-    )
+    interactive = False  # Set True to load the ChipTools CLI
+
+    if interactive:
+        # ChipTools provides a command line interface to allow you to perform
+        # actions on the project such as synthesis and simulation interactively.
+        # It can be launched by importing the CommandLine from chiptools.core.cli
+        # and executing the cmdloop() method - the project is passed to the
+        # CommandLine constructor. Launch the ChipTools command line with the
+        # project we just configured:
+        from chiptools.core.cli import CommandLine
+        CommandLine(project).cmdloop()
+    else:
+        # Run the automated unit tests on the project:
+        project.run_tests(tool_name='ghdl')
+        # Synthesise the project:
+        project.synthesise(
+            library='lib_max_hold',
+            entity='max_hold',
+            tool_name='vivado'
+        )

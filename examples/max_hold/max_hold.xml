@@ -1,7 +1,7 @@
 <project>
     <config simulation_directory='simulation'/>
     <config synthesis_directory='synthesis'/>
-    <config simulator='vivado'/>
+    <config simulator='ghdl'/>
     <config synthesiser='vivado'/>
     <config part='xc7a100tcsg324-1'/>
 
