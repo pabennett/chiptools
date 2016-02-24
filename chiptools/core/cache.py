@@ -59,7 +59,6 @@ class FileCache:
             # design
             with open(self.cache_path, 'rb') as pickeFile:
                 self.cache = pickle.load(pickeFile)
-            log.debug(self.__str__())
         except:
             log.warning('The cache file was corrupted, re-initialising...')
             log.debug(traceback.format_exc())
