@@ -414,7 +414,6 @@ class Project:
         """
         simulation_tool = self._get_tool(tool_name, tool_type='simulation')
         # First compile the project
-
         simulation_tool.compile_project(
             includes=self.options.get_simulator_library_dependencies(
                 simulation_tool.name
@@ -429,13 +428,7 @@ class Project:
             for test_group in file_object.testsuite:
                 for testId, test in enumerate(utils.iterate_tests(test_group)):
                     # Patch in the simulation runtime data
-                    test.postImport(
-                        self.options.get_simulator_library_dependencies(
-                            simulation_tool.name
-                        ),
-                        self.get_simulation_directory(),
-                        simulation_tool,
-                    )
+                    test.load_environment(self, tool_name=tool_name)
                     # Add the test to the library
                     tests.append((file_name, test))
 

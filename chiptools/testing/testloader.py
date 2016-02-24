@@ -41,30 +41,90 @@ class ChipToolsTest(unittest.TestCase):
     tests.
     """
 
+    # Simulation duration in seconds for simulators that support user defined
+    # durations.
     duration = 0
+    # Map of module generic/parameter name and value for simulators that
+    # support this feature.
     generics = {}
+    # Name of the entity to simulate
     entity = ''
+    # Library of the entity to simulate
     library = ''
+    # Simulation return data (stdout, stderr and return code)
     sim_stdout = ''
     sim_stderr = ''
     sim_ret_val = 0
+    # Project reference (only required if external tools such as nosetests will
+    # be used to execute the unit tests).
+    project = None 
+    environment_initialised = False
 
-    def postImport(
-        self,
-        simulation_libraries,
-        simulation_path,
-        simulation_tool
-    ):
+    @staticmethod
+    def get_environment(project, tool_name=None):
         """
-        Store project environment information so that it is available to
-        testcases when they are run.
+        Return the simulation environment items from the supplied project
+        instance.
         """
-        self.simulation_libraries = simulation_libraries
-        self.simulation_root = simulation_path
-        self.simulator = simulation_tool
+        # Get the simulation root directory
+        simulation_root = project.get_simulation_directory()
+        # Get the simulator instance to allow compilation/simulation
+        simulator = project._get_tool(
+            tool_name,
+            tool_type='simulation'
+        )
+        # Get the simulation library map so that external dependencies
+        # can be resolved.
+        simulation_libraries = (
+            project.options.get_simulator_library_dependencies(
+                simulator.name
+            )
+        )
+        return (simulator, simulation_root, simulation_libraries)
+
+    @classmethod
+    def setUpClass(cls):
+        if cls.project is not None:
+            # Using external test runner (such as Nosetests) to execute this
+            # test. The test environment therefore needs to be loaded from
+            # the Project instance:
+            if sys.version_info < (3, 0, 0):
+                # Python 2.7 requires methods to be called with a type instance
+                # so the load_environment method cannot be used here. Directly
+                # operate on the class instead.
+                simulator, root, libs = cls.get_environment(cls.project)
+                cls.simulator = simulator
+                cls.simulation_root = root
+                cls.simulation_libraries = libs
+                cls.environment_initialised = True
+            else:
+                cls.load_environment(cls, cls.project)
+            # Compile the design if required (simulators with caching will
+            # perform this step once).
+            cls.simulator.compile_project(includes=cls.simulation_libraries)
+    def load_environment(self, project, tool_name=None):
+        """
+        Initialise the TestCase simulation environment using the supplied 
+        Project reference so that the individual tests implemented in this
+        TestCase are able to compile and simulate the design.
+        """
+        simulator, root, libs = ChipToolsTest.get_environment(
+            project, 
+            tool_name
+        )
+        self.simulator = simulator
+        self.simulation_root = root
+        self.simulation_libraries = libs
+        self.environment_initialised = True
 
     def simulate(self):
-
+        if not self.environment_initialised:
+            raise EnvironmentError(
+                'The simulation environment for this TestCase is not ' +
+                'initialised so the test cases cannot be executed. ' +
+                'Ensure that a chiptools.core.project instance is stored ' +
+                'in the "project" attribute of this TestCase'
+            )
         # Simulate the testbench
         if len(self.generics.keys()) == 0:
             log.warning(
@@ -92,10 +152,7 @@ class ChipToolsTest(unittest.TestCase):
         return (ret_val, stdout, stderr)
 
 
-def load_tests(
-    path,
-    simulation_path,
-):
+def load_tests(path, simulation_path):
     """Import the test shim python module given by path and return a
     collection of Unittest classes for each of the tests found in the shim"""
     if not os.path.exists(path):
