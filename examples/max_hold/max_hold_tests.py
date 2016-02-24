@@ -33,6 +33,14 @@ except ImportError:
 # the ChipToolsTest class (which is derived from unittest.TestCase)
 from chiptools.testing.testloader import ChipToolsTest
 
+# Import the Max Hold project so that we can run these tests using an external
+# tool such as Nosetests if desired:
+try:
+    import max_hold_project
+    project = max_hold_project.project
+except:
+    project = None
+
 # The logging system is already configured by ChipTools, any messages you print
 # here will be formatted and displayed using the ChipTools logger config.
 log = logging.getLogger(__name__)
@@ -67,6 +75,9 @@ class MaxHoldTests(ChipToolsTest):
     entity = 'tb_max_hold'
     # Specify the library that this Test should target
     library = 'lib_tb_max_hold'
+    # Add a reference to the Max Hold project so that we can run this TestCase
+    # directly as well as through the ChipTools testing framework.
+    project = project
 
     def setUp(self):
         """Place any code that is required to prepare simulator inputs in this
@@ -206,21 +217,21 @@ class MaxHoldTests(ChipToolsTest):
         plt.savefig(os.path.join(self.simulation_root, testname + '.png'))
         plt.close(fig)
 
-    def generic_random_data_test(self, data_width, testname):
+    def run_generic_random_data(self, data_width, testname):
         # 10 sequences of random length (between 0 and 400 integers)
         sequence_lengths = [random.randint(0, 400) for i in range(10)]
         # Generate the values for the test
         values = get_random_data(data_width, sequence_lengths)
-        self.generic_data_test(data_width, values, testname)
+        self.run_generic_data(data_width, values, testname)
 
-    def generic_constant_data_test(self, data_width, data, testname):
+    def run_generic_constant_data(self, data_width, data, testname):
         # 10 sequences of random length (between 0 and 400 integers)
         sequence_lengths = [random.randint(0, 400) for i in range(10)]
         # Generate the values for the test
         values = [[data for i in range(l)] for l in sequence_lengths]
-        self.generic_data_test(data_width, values, testname)
+        self.run_generic_data(data_width, values, testname)
 
-    def generic_data_test(self, data_width, values, testname):
+    def run_generic_data(self, data_width, values, testname):
         self.run_simulation(values, data_width)
         # Use the output checker to validate the output
         self.check_output(self.output_path, values, testname)
@@ -231,37 +242,37 @@ class MaxHoldTests(ChipToolsTest):
 
     def test_max_hold_random_32bit(self):
         """Test the max hold function with 32bit random data."""
-        self.generic_random_data_test(32, 'test_max_hold_random_32bit')
+        self.run_generic_random_data(32, 'test_max_hold_random_32bit')
 
     def test_max_hold_random_100bit(self):
         """Test the max hold function with 100bit random data."""
-        self.generic_random_data_test(100, 'test_max_hold_random_100bit')
+        self.run_generic_random_data(100, 'test_max_hold_random_100bit')
 
     def test_max_hold_random_128bit(self):
         """Test the max hold function with 128bit random data."""
-        self.generic_random_data_test(128, 'test_max_hold_random_128bit')
+        self.run_generic_random_data(128, 'test_max_hold_random_128bit')
 
     def test_max_hold_random_1bit(self):
         """Test the max hold function with 1bit random data."""
-        self.generic_random_data_test(1, 'test_max_hold_random_1bit')
+        self.run_generic_random_data(1, 'test_max_hold_random_1bit')
 
     def test_max_hold_random_8bit(self):
         """Test the max hold function with 8bit random data."""
-        self.generic_random_data_test(8, 'test_max_hold_random_8bit')
+        self.run_generic_random_data(8, 'test_max_hold_random_8bit')
 
     def test_max_hold_constant_data_1(self):
         """Test the max hold function with constant 1 data."""
-        self.generic_constant_data_test(32, 1, 'test_max_hold_constant_data_1')
+        self.run_generic_constant_data(32, 1, 'test_max_hold_constant_data_1')
 
     def test_max_hold_constant_data_100(self):
         """Test the max hold function with constant 100 data."""
-        self.generic_constant_data_test(
+        self.run_generic_constant_data(
             32, 100, 'test_max_hold_constant_data_100'
         )
 
     def test_max_hold_constant_data_0(self):
         """Test the max hold function with constant 0 data."""
-        self.generic_constant_data_test(32, 0, 'test_max_hold_constant_data_0')
+        self.run_generic_constant_data(32, 0, 'test_max_hold_constant_data_0')
 
     def test_max_hold_ramp_up(self):
         """Test the max hold function with positive gradient ramps."""
@@ -269,7 +280,7 @@ class MaxHoldTests(ChipToolsTest):
         values = [
             [i for i in range(l)] for l in sequence_lengths
         ]
-        self.generic_data_test(32, values, 'test_max_hold_ramp_up')
+        self.run_generic_data(32, values, 'test_max_hold_ramp_up')
 
     def test_max_hold_ramp_down(self):
         """Test the max hold function with negative gradient ramps."""
@@ -277,7 +288,7 @@ class MaxHoldTests(ChipToolsTest):
         values = [
             [l-i for i in range(l)] for l in sequence_lengths
         ]
-        self.generic_data_test(32, values, 'test_max_hold_ramp_down')
+        self.run_generic_data(32, values, 'test_max_hold_ramp_down')
 
     def test_max_hold_impulse(self):
         """Test the max hold function with impulses."""
@@ -285,7 +296,7 @@ class MaxHoldTests(ChipToolsTest):
         values = [
             [[0, l][i == 0] for i in range(l)] for l in sequence_lengths
         ]
-        self.generic_data_test(32, values, 'test_max_hold_impulse')
+        self.run_generic_data(32, values, 'test_max_hold_impulse')
 
     def test_max_hold_sinusoid(self):
         """Test the max hold function with sinusoids."""
@@ -297,7 +308,7 @@ class MaxHoldTests(ChipToolsTest):
                 ) for i in range(l)
             ] for l in sequence_lengths
         ]
-        self.generic_data_test(32, values, 'test_max_hold_sinusoid')
+        self.run_generic_data(32, values, 'test_max_hold_sinusoid')
 
     def test_max_hold_square(self):
         """Test the max hold function with square waves."""
@@ -307,7 +318,7 @@ class MaxHoldTests(ChipToolsTest):
                 int((2**8-1) * (i % 2)) for i in range(l)
             ] for l in sequence_lengths
         ]
-        self.generic_data_test(32, values, 'test_max_hold_square')
+        self.run_generic_data(32, values, 'test_max_hold_square')
 
     def test_max_hold_sinusoid_single_sequence(self):
         """Test the max hold function with a single sinusoid sequence."""
@@ -319,7 +330,7 @@ class MaxHoldTests(ChipToolsTest):
                 ) for i in range(l)
             ] for l in sequence_lengths
         ]
-        self.generic_data_test(
+        self.run_generic_data(
             32, values, 'test_max_hold_sinusoid_single_sequence'
         )
 
@@ -328,6 +339,6 @@ class MaxHoldTests(ChipToolsTest):
         sequence_lengths = [200]
         data_width = 32
         values = get_random_data(data_width, sequence_lengths)
-        self.generic_data_test(
+        self.run_generic_data(
             data_width, values, 'test_max_hold_random_single_sequence'
         )
