@@ -216,8 +216,8 @@ class XmlProjectParser:
                 # child flags otherwise get the child synthesis flag and use
                 # that.
                 if synthesise is None:
-                    project_attribs = XmlProjectParser._get_node_attributes(
-                        project_node,
+                    project_attribs = ProjectAttributes.process_attributes(
+                        project_node.attributes,
                         project_root
                     )
                     synthesis_enabled = project_attribs.get(
@@ -229,21 +229,15 @@ class XmlProjectParser:
 
                 for child in project_node.childNodes:
                     if child.nodeName == ProjectAttributes.XML_NODE_PROJECT:
-                        attribs = XmlProjectParser._get_node_attributes(
-                            child,
+                        attribs = ProjectAttributes.process_attributes(
+                            child.attributes,
                             project_root
                         )
                         # If this whole node should not be synthesised, ignore
                         # any child flags otherwise get the child synthesis
                         # flag and use that.
                         if synthesis_enabled is None:
-                            file_attributes = (
-                                XmlProjectParser._get_node_attributes(
-                                    child,
-                                    project_root
-                                )
-                            )
-                            synthesise = file_attributes.get(
+                            synthesise = attribs.get(
                                 ProjectAttributes.ATTRIBUTE_SYNTHESIS,
                                 None
                             )
@@ -325,15 +319,12 @@ class XmlProjectParser:
                         # any child flags otherwise get the child synthesis
                         # flag and use that.
                         if synthesis_enabled is None:
-                            file_attributes = (
-                                XmlProjectParser._get_node_attributes(
-                                    child,
+                            synthesise = (
+                                ProjectAttributes.get_processed_attribute(
+                                    child.attributes,
+                                    ProjectAttributes.ATTRIBUTE_SYNTHESIS,
                                     project_root
                                 )
-                            )
-                            synthesise = file_attributes.get(
-                                ProjectAttributes.ATTRIBUTE_SYNTHESIS,
-                                None
                             )
                         else:
                             synthesise = synthesis_enabled
@@ -363,40 +354,12 @@ class XmlProjectParser:
         )
 
     @staticmethod
-    def _get_node_attributes(node, root):
-        """Return the node attributes as a dictionary if any attributes exist.
-        Attributes will be pre-processed according to the NODE_PROCESSOR
-        function dictionary. The returned dictionary will contain AT LEAST
-        the keys present in NODE_PROCESSOR, additional optional keys may
-        also be present
-        """
-        attribs = node.attributes
-        if attribs is None:
-            return {}
-        else:
-            attribs = dict(attribs.items())
-
-        for attribute, function in NODE_PROCESSOR.items():
-            # If the attribute exists process it using the processor function
-            # otherwise insert a default value
-            if attribute in attribs:
-                attribs[attribute] = function(
-                    attribs[attribute],
-                    root
-                )
-            else:
-                # Ensure the attribute is initialised to its default
-                attribs[attribute] = FILE_DEFAULTS[attribute]
-        return attribs
-
-    @staticmethod
     def _add_config(child, root, project_object):
         """Process and add all child attributes to the given
         configuration dict. Return a reference to the modified dict.
         """
-        attribs = XmlProjectParser._get_node_attributes(child, root)
         config = {}
-        for k, v in attribs.items():
+        for k, v in child.attributes.items():
             if v is not None:
                 config[k] = v
         project_object.add_config_dict(**config)
@@ -412,8 +375,8 @@ class XmlProjectParser:
         """Add the given file to the given library and ensure that any
         relative file paths are correctly converted into absolute paths using
         the project_root as a reference"""
-        attribs = XmlProjectParser._get_node_attributes(
-            file_node,
+        attribs = ProjectAttributes.process_attributes(
+            file_node.attributes,
             root
         )
         if attribs is not None:
@@ -441,7 +404,7 @@ class XmlProjectParser:
         """Process the given library node and add it to the
         project_dictionary. Any files containedwithin the library will be
         added to the project_dictionary under that library"""
-        attribs = XmlProjectParser._get_node_attributes(child, root)
+        attribs = ProjectAttributes.process_attributes(child.attributes, root)
         if ProjectAttributes.ATTRIBUTE_NAME not in attribs:
             log.warning('Ignoring library with no name specified')
             return
@@ -463,8 +426,9 @@ class XmlProjectParser:
 
     @staticmethod
     def _add_constraints(child, root, project_object):
-        attribs = XmlProjectParser._get_node_attributes(child, root)
+        attribs = ProjectAttributes.process_attributes(child.attributes, root)
         path = attribs['path']
+        # Path is passed separately, so delete it from the kwargs dict.
         del attribs['path']
         project_object.add_constraints(
             path,
@@ -473,8 +437,9 @@ class XmlProjectParser:
 
     @staticmethod
     def _add_unittest(child, root, project_object):
-        attribs = XmlProjectParser._get_node_attributes(child, root)
+        attribs = ProjectAttributes.process_attributes(child.attributes, root)
         path = attribs['path']
+        # Path is passed separately, so delete it from the kwargs dict.
         del attribs['path']
         project_object.add_unittest(
             path,

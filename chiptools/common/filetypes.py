@@ -3,6 +3,7 @@ import re
 import sys
 import logging
 from chiptools.common import utils
+import xml
 
 log = logging.getLogger(__name__)
 
@@ -90,6 +91,52 @@ class ProjectAttributes:
     XML_ADDITIONAL_TOOL_ARGS_RE = re.compile(
         'args_([A-Z,a-z]+)_([A-Z,a-z]+)'
     )
+    @staticmethod
+    def cast_attributes_to_dict(attributes):
+        """
+        Ensure that attributes is a dictionary. Casts None to an empty dict
+        and casts an xml.dom.minidom.NamedNodeMap to a dict.
+        """
+        if attributes is None:
+            return {}
+        elif isinstance(attributes, xml.dom.minidom.NamedNodeMap):
+            attributes = dict(attributes.items())
+        return attributes
+
+    @staticmethod
+    def process_attributes(attributes, root):
+        """Return the attributes as a dictionary if any attributes exist.
+        Attributes will be pre-processed according to the NODE_PROCESSOR
+        function dictionary. The returned dictionary will contain AT LEAST
+        the keys present in NODE_PROCESSOR, additional optional keys may
+        also be present.
+
+        Attributes can be a dictionary or an XML NamedNodeMap.
+        """
+        attributes = ProjectAttributes.cast_attributes_to_dict(attributes)
+        for attribute, function in NODE_PROCESSOR.items():
+            # If the attribute exists process it using the processor function
+            # otherwise insert a default value
+            if attribute in attributes:
+                attributes[attribute] = function(
+                    attributes[attribute],
+                    root
+                )
+            else:
+                # Ensure the attribute is initialised to its default
+                attributes[attribute] = FILE_DEFAULTS[attribute]
+        return attributes
+
+    @staticmethod
+    def get_processed_attribute(attributes, root, name):
+        """
+        Return a single attribute from the attributes dictionary using name as
+        a key and root as the project root. The returned attribute is processed
+        according to the functions in the NODE_PROCESSOR dictionary.
+        """
+        if name in attributes and name in NODE_PROCESSOR:
+            return NODE_PROCESSOR[name](attributes[name], root)
+        return FILE_DEFAULTS.get(name, None)
 
 # Process each of the file attributes using the following functions
 NODE_PROCESSOR = {
