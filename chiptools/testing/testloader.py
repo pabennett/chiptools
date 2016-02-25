@@ -84,7 +84,7 @@ class ChipToolsTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        if cls.project is not None:
+        if not cls.environment_initialised and cls.project is not None:
             # Using external test runner (such as Nosetests) to execute this
             # test. The test environment therefore needs to be loaded from
             # the Project instance:
@@ -102,20 +102,23 @@ class ChipToolsTest(unittest.TestCase):
             # Compile the design if required (simulators with caching will
             # perform this step once).
             cls.simulator.compile_project(includes=cls.simulation_libraries)
+
     def load_environment(self, project, tool_name=None):
         """
         Initialise the TestCase simulation environment using the supplied 
         Project reference so that the individual tests implemented in this
         TestCase are able to compile and simulate the design.
         """
+        if self.environment_initialised:
+            return
         simulator, root, libs = ChipToolsTest.get_environment(
             project, 
             tool_name
         )
-        self.simulator = simulator
-        self.simulation_root = root
-        self.simulation_libraries = libs
-        self.environment_initialised = True
+        self.__class__.simulator = simulator
+        self.__class__.simulation_root = root
+        self.__class__.simulation_libraries = libs
+        self.__class__.environment_initialised = True
 
     def simulate(self):
         if not self.environment_initialised:
