@@ -1,6 +1,7 @@
 """
 This script provides an example of how to use the ChipTools scripted flow.
 """
+import os
 try:
     # Import the Project class from chiptools.core.project
     from chiptools.core.project import Project
@@ -9,8 +10,10 @@ except ImportError:
     print("ChipTools is not installed on your system.")
     sys.exit(1)
 
+project_root = os.path.dirname(__file__)
+
 # Create a new Project
-project = Project()
+project = Project(root=project_root)
 
 # Configure project, you may wish to edit some of these settings depending
 # on which simulation/synthesis tools are installed on your system.
