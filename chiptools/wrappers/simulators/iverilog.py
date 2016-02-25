@@ -4,6 +4,7 @@ import shlex
 import time
 
 from chiptools.wrappers.simulator import Simulator
+from chiptools.common.exceptions import FileNotFoundError
 from chiptools.common.filetypes import FileType
 from chiptools.common import utils
 

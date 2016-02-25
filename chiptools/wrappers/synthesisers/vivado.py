@@ -6,6 +6,7 @@ import traceback
 import tempfile
 
 from chiptools.common.filetypes import FileType
+from chiptools.common.exceptions import FileNotFoundError
 from chiptools.wrappers import synthesiser
 
 log = logging.getLogger(__name__)

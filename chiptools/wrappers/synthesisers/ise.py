@@ -8,6 +8,7 @@ import shlex
 
 from chiptools.common.filetypes import FileType
 from chiptools.common import exceptions
+from chiptools.common.exceptions import FileNotFoundError
 from chiptools.wrappers import synthesiser
 
 log = logging.getLogger(__name__)

@@ -5,6 +5,7 @@ import shlex
 import traceback
 
 from chiptools.common import exceptions
+from chiptools.common.exceptions import FileNotFoundError
 from chiptools.common.filetypes import FileType
 from chiptools.wrappers import synthesiser
 

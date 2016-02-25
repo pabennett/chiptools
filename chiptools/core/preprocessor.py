@@ -5,6 +5,8 @@ import inspect
 import sys
 import os
 
+from chiptools.common.exceptions import FileNotFoundError
+
 log = logging.getLogger(__name__)
 
 

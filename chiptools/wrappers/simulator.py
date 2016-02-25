@@ -3,6 +3,7 @@ import os
 import time
 
 from chiptools.common import exceptions
+from chiptools.common.exceptions import FileNotFoundError
 from chiptools.common import utils
 from chiptools.wrappers.toolchains import ToolchainBase
 

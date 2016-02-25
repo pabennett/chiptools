@@ -3,6 +3,7 @@ import logging
 import traceback
 
 from chiptools.common import exceptions
+from chiptools.common.exceptions import FileNotFoundError
 from chiptools.core import package_builder
 from chiptools.wrappers.toolchains import ToolchainBase
 

@@ -21,6 +21,8 @@ import hashlib
 from collections import OrderedDict
 from os.path import expanduser
 
+from chiptools.common.exceptions import FileNotFoundError
+
 log = logging.getLogger(__name__)
 
 # Get the user home directory
