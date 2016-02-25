@@ -26,7 +26,9 @@ class BaseTests:
                 return
             self.assertTrue(
                 os.path.exists(self.project_path),
-                msg='Could not find the project file.'
+                msg='Could not find the project file: {0}'.format(
+                    self.project_path
+                )
             )
             self.cli = cli.CommandLine()
             self.cli.do_load_project(self.project_path)
@@ -69,6 +71,7 @@ class BaseTests:
             self.cli.do_remove_tests(command)
 
         def run_unit_selection(self, command=''):
+            self.cli.do_show_synthesis_fileset('')
             self.cli.do_run_tests(command)
 
         def check_unit_framework(self):
@@ -90,10 +93,16 @@ class BaseTests:
                 )
 
         def check_report(self, path='report.html'):
-            self.assertTrue(os.path.exists(path))
+            self.assertTrue(
+                os.path.exists(path),
+                msg='Could not find report: {0}'.format(path)
+            )
             with open(path, 'r') as f:
                 data = f.read()
-            self.assertTrue(len(data) > 0)
+            self.assertTrue(
+                len(data) > 0,
+                msg='The test report is empty.'
+            )
             failures = re.search(
                 'Failure (\\d+)',
                 data
@@ -116,7 +125,8 @@ class BaseTests:
 class TestExampleProjectsMaxHoldModelsim(BaseTests.SimulatorInterfaceChecks):
 
     simulator_name = 'modelsim'
-    root = os.path.join('examples', 'max_hold')
+    base = os.path.dirname(__file__)
+    root = os.path.join(base, '..', 'examples', 'max_hold')
     project_path = os.path.join(root, 'max_hold.xml')
     cache_path = os.path.join(root, '.max_hold_compilation.cache')
 
@@ -160,19 +170,22 @@ class TestExampleProjectsMaxHoldVhdlGhdl(TestExampleProjectsMaxHoldModelsim):
 
 class TestExampleProjectsMaxHoldSvIcarus(TestExampleProjectsMaxHoldModelsim):
     simulator_name = 'iverilog'
-    root = os.path.join('examples', 'max_hold')
+    base = os.path.dirname(__file__)
+    root = os.path.join(base, '..', 'examples', 'max_hold')
     project_path = os.path.join(root, 'max_hold_sv.xml')
 
 
 class TestExampleProjectsMaxHoldSvVivado(TestExampleProjectsMaxHoldModelsim):
     simulator_name = 'vivado'
-    root = os.path.join('examples', 'max_hold')
+    base = os.path.dirname(__file__)
+    root = os.path.join(base, '..', 'examples', 'max_hold')
     project_path = os.path.join(root, 'max_hold_sv.xml')
 
 
 class TestExampleProjectsMaxHoldSvModelsim(TestExampleProjectsMaxHoldModelsim):
     simulator_name = 'modelsim'
-    root = os.path.join('examples', 'max_hold')
+    base = os.path.dirname(__file__)
+    root = os.path.join(base, '..', 'examples', 'max_hold')
     project_path = os.path.join(root, 'max_hold_sv.xml')
 
 if __name__ == '__main__':
