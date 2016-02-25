@@ -82,8 +82,8 @@ def process(data, path):
     data = ['-- Preprocessed at ' + time.strftime('%H:%M:%S')] + data
     return data
 """
-
-    root = os.path.join('tests', 'testprojects', 'project_checks')
+    base = os.path.dirname(__file__)
+    root = os.path.join(base, '..', 'tests', 'testprojects', 'project_checks')
     project_path = os.path.join(root, 'dummy.xml')
     invalid_project_path = os.path.join(root, 'invalid.xml')
     reporter_path = os.path.join(root, 'reporter.py')
