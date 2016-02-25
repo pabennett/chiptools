@@ -157,12 +157,12 @@ class CommandLine(cmd.Cmd, object):
         """Print out the synthesis file set"""
         items = self.project.get_synthesis_fileset().items()
         if len(items) == 0:
-            log.info('There are no synthesisable files loaded.')
+            print('There are no synthesisable files loaded.')
             return
         for libName, fileList in items:
-            log.info('Library: ' + libName)
+            print('Library: ' + libName)
             for file in fileList:
-                log.info('\t\t' + file.path)
+                print('\t\t' + file.path)
 
     @wraps_do_commands
     def do_synthesise(self, command):
