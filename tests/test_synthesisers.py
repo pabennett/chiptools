@@ -28,7 +28,9 @@ class BaseTests:
                 return
             self.assertTrue(
                 os.path.exists(self.project_path),
-                msg='Could not find the project file.'
+                msg='Could not find the project file: {0}'.format(
+                    self.project_path
+                )
             )
             self.cli = cli.CommandLine()
             self.cli.do_load_project(self.project_path)
@@ -108,7 +110,8 @@ class BaseTests:
 class TestMaxHoldSynthesisIse(BaseTests.TestSynthesiserInterface):
 
     synthesiser_name = 'ise'
-    root = os.path.join('examples', 'max_hold')
+    base = os.path.dirname(__file__)
+    root = os.path.join(base, '..', 'examples', 'max_hold')
     project_path = os.path.join(root, 'max_hold.xml')
     part = 'xc6slx9-csg324-2'
 
@@ -134,7 +137,8 @@ class TestMaxHoldSynthesisIse(BaseTests.TestSynthesiserInterface):
 class TestMaxHoldSynthesisVivado(BaseTests.TestSynthesiserInterface):
 
     synthesiser_name = 'vivado'
-    root = os.path.join('examples', 'max_hold')
+    base = os.path.dirname(__file__)
+    root = os.path.join(base, '..', 'examples', 'max_hold')
     project_path = os.path.join(root, 'max_hold.xml')
     part = 'xc7a100tcsg324-1'
 
@@ -158,7 +162,8 @@ class TestMaxHoldSynthesisVivado(BaseTests.TestSynthesiserInterface):
 class TestMaxHoldSynthesisQuartus(BaseTests.TestSynthesiserInterface):
 
     synthesiser_name = 'quartus'
-    root = os.path.join('examples', 'max_hold')
+    base = os.path.dirname(__file__)
+    root = os.path.join(base, '..', 'examples', 'max_hold')
     project_path = os.path.join(root, 'max_hold.xml')
     part = 'EP3C40F484C6'
 
