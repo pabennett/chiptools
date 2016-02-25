@@ -7,7 +7,9 @@ import time
 from xml.dom import minidom
 
 from chiptools.common import utils
-from chiptools.common.filetypes import ProjectAttributes
+from chiptools.common.filetypes import (
+    ProjectAttributes, NODE_PROCESSOR, FILE_DEFAULTS
+)
 
 
 log = logging.getLogger(__name__)
@@ -175,30 +177,6 @@ class XmlProjectParser:
 
     """
 
-    # Process each of the file attributes using the following functions
-    XML_NODE_PROCESSOR = {
-        ProjectAttributes.XML_ATTRIBUTE_PATH: utils.relative_path_to_abs,
-        ProjectAttributes.ATTRIBUTE_SIM_DIR: utils.relative_path_to_abs,
-        ProjectAttributes.ATTRIBUTE_SYNTH_DIR: utils.relative_path_to_abs,
-        ProjectAttributes.XML_ATTRIBUTE_PREPROCESSOR: utils.relative_path_to_abs,
-        ProjectAttributes.ATTRIBUTE_REPORTER: utils.relative_path_to_abs,
-        ProjectAttributes.XML_ATTRIBUTE_SYNTHESIS:
-            lambda x, root: x.lower() != 'false',
-        ProjectAttributes.ATTRIBUTE_SIM_TOOL: lambda x, root: x,
-        ProjectAttributes.ATTRIBUTE_SYNTH_TOOL: lambda x, root: x,
-        ProjectAttributes.ATTRIBUTE_SYNTH_PART: lambda x, root: x,
-    }
-    FILE_DEFAULTS = {
-        ProjectAttributes.XML_ATTRIBUTE_PATH: None,
-        ProjectAttributes.XML_ATTRIBUTE_PREPROCESSOR: None,
-        ProjectAttributes.ATTRIBUTE_REPORTER: None,
-        ProjectAttributes.XML_ATTRIBUTE_SYNTHESIS: None,
-        ProjectAttributes.ATTRIBUTE_SIM_DIR: None,
-        ProjectAttributes.ATTRIBUTE_SYNTH_DIR: None,
-        ProjectAttributes.ATTRIBUTE_SIM_TOOL: None,
-        ProjectAttributes.ATTRIBUTE_SYNTH_TOOL: None,
-        ProjectAttributes.ATTRIBUTE_SYNTH_PART: None,
-    }
 
     @staticmethod
     def load_project(path, project_object):
@@ -391,9 +369,9 @@ class XmlProjectParser:
     @staticmethod
     def _get_node_attributes(node, root):
         """Return the node attributes as a dictionary if any attributes exist.
-        Attributes will be pre-processed according to the XML_NODE_PROCESSOR
+        Attributes will be pre-processed according to the NODE_PROCESSOR
         function dictionary. The returned dictionary will contain AT LEAST
-        the keys present in XML_NODE_PROCESSOR, additional optional keys may
+        the keys present in NODE_PROCESSOR, additional optional keys may
         also be present
         """
         attribs = node.attributes
@@ -402,7 +380,7 @@ class XmlProjectParser:
         else:
             attribs = dict(attribs.items())
 
-        for attribute, function in XmlProjectParser.XML_NODE_PROCESSOR.items():
+        for attribute, function in NODE_PROCESSOR.items():
             # If the attribute exists process it using the processor function
             # otherwise insert a default value
             if attribute in attribs:
@@ -412,7 +390,7 @@ class XmlProjectParser:
                 )
             else:
                 # Ensure the attribute is initialised to its default
-                attribs[attribute] = XmlProjectParser.FILE_DEFAULTS[attribute]
+                attribs[attribute] = FILE_DEFAULTS[attribute]
         return attribs
 
     @staticmethod

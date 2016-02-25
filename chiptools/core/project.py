@@ -9,7 +9,9 @@ from chiptools.common import exceptions
 from chiptools.common import utils
 from chiptools.common.filetypes import File
 from chiptools.common.filetypes import Constraints
-from chiptools.common.filetypes import ProjectAttributes
+from chiptools.common.filetypes import (
+    ProjectAttributes, NODE_PROCESSOR, FILE_DEFAULTS
+)
 from chiptools.common.filetypes import UnitTestFile
 from chiptools.core.preprocessor import Preprocessor
 from chiptools.core import reporter
@@ -24,10 +26,10 @@ log = logging.getLogger(__name__)
 
 
 class Project:
-    def __init__(self):
-        self.initialise()
+    def __init__(self, root=os.getcwd()):
+        self.initialise(root=root)
 
-    def initialise(self):
+    def initialise(self, root=os.getcwd()):
         self.options = options.Options()
         self.tool_wrapper = ToolWrapper(
             self,
@@ -36,7 +38,7 @@ class Project:
 
         self.config = {}
         self.cache = FileCache('.chiptools')
-        self.root = os.getcwd()
+        self.root = root
         self.generics = {}
         self.constraints = []
         self.file_list = []
@@ -108,6 +110,9 @@ class Project:
         """
         Add a configuration key, value mapping for the project.
         """
+        # Format the value using the NODE_PROCESSOR function if available.
+        if name in NODE_PROCESSOR:
+            value = NODE_PROCESSOR[name](value, self.root)
         if self.config.get(name, None) is not None and not force:
             log.warning(
                 'Ignoring duplicate configuration attribute ' +

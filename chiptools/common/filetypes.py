@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import logging
+from chiptools.common import utils
 
 log = logging.getLogger(__name__)
 
@@ -90,6 +91,32 @@ class ProjectAttributes:
         'args_([A-Z,a-z]+)_([A-Z,a-z]+)'
     )
 
+# Process each of the file attributes using the following functions
+NODE_PROCESSOR = {
+    ProjectAttributes.XML_ATTRIBUTE_PATH: utils.relative_path_to_abs,
+    ProjectAttributes.ATTRIBUTE_SIM_DIR: utils.relative_path_to_abs,
+    ProjectAttributes.ATTRIBUTE_SYNTH_DIR: utils.relative_path_to_abs,
+    ProjectAttributes.XML_ATTRIBUTE_PREPROCESSOR: utils.relative_path_to_abs,
+    ProjectAttributes.ATTRIBUTE_REPORTER: utils.relative_path_to_abs,
+    ProjectAttributes.XML_ATTRIBUTE_SYNTHESIS:
+        lambda x, root: x.lower() != 'false',
+    ProjectAttributes.ATTRIBUTE_SIM_TOOL: lambda x, root: x,
+    ProjectAttributes.ATTRIBUTE_SYNTH_TOOL: lambda x, root: x,
+    ProjectAttributes.ATTRIBUTE_SYNTH_PART: lambda x, root: x,
+}
+
+# Default node attributes for file objects
+FILE_DEFAULTS = {
+    ProjectAttributes.XML_ATTRIBUTE_PATH: None,
+    ProjectAttributes.XML_ATTRIBUTE_PREPROCESSOR: None,
+    ProjectAttributes.ATTRIBUTE_REPORTER: None,
+    ProjectAttributes.XML_ATTRIBUTE_SYNTHESIS: None,
+    ProjectAttributes.ATTRIBUTE_SIM_DIR: None,
+    ProjectAttributes.ATTRIBUTE_SYNTH_DIR: None,
+    ProjectAttributes.ATTRIBUTE_SIM_TOOL: None,
+    ProjectAttributes.ATTRIBUTE_SYNTH_TOOL: None,
+    ProjectAttributes.ATTRIBUTE_SYNTH_PART: None,
+}
 
 class UnitTestFile(object):
     """The UnitTestFile object provides a container for Python test shims."""
