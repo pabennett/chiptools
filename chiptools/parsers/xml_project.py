@@ -221,7 +221,7 @@ class XmlProjectParser:
                         project_root
                     )
                     synthesis_enabled = project_attribs.get(
-                        ProjectAttributes.XML_ATTRIBUTE_SYNTHESIS,
+                        ProjectAttributes.ATTRIBUTE_SYNTHESIS,
                         None
                     )
                 else:
@@ -237,27 +237,25 @@ class XmlProjectParser:
                         # any child flags otherwise get the child synthesis
                         # flag and use that.
                         if synthesis_enabled is None:
-                            fileAttributes = (
+                            file_attributes = (
                                 XmlProjectParser._get_node_attributes(
                                     child,
                                     project_root
                                 )
                             )
-                            try:
-                                synthesise = fileAttributes[
-                                    ProjectAttributes.XML_ATTRIBUTE_SYNTHESIS
-                                ]
-                            except KeyError:
-                                synthesise = None
+                            synthesise = file_attributes.get(
+                                ProjectAttributes.ATTRIBUTE_SYNTHESIS,
+                                None
+                            )
                         else:
                             synthesise = synthesis_enabled
 
-                        if ProjectAttributes.XML_ATTRIBUTE_PATH in attribs:
+                        if ProjectAttributes.ATTRIBUTE_PATH in attribs:
                             log.debug(
                                 'Found sub-project: ' +
                                 str(
                                     attribs[
-                                        ProjectAttributes.XML_ATTRIBUTE_PATH
+                                        ProjectAttributes.ATTRIBUTE_PATH
                                     ]
                                 )
                             )
@@ -266,7 +264,7 @@ class XmlProjectParser:
                             XmlProjectParser.parse_project(
                                 str(
                                     attribs[
-                                        ProjectAttributes.XML_ATTRIBUTE_PATH
+                                        ProjectAttributes.ATTRIBUTE_PATH
                                     ]
                                 ),
                                 project_object,
@@ -327,18 +325,16 @@ class XmlProjectParser:
                         # any child flags otherwise get the child synthesis
                         # flag and use that.
                         if synthesis_enabled is None:
-                            fileAttributes = (
+                            file_attributes = (
                                 XmlProjectParser._get_node_attributes(
                                     child,
                                     project_root
                                 )
                             )
-                            try:
-                                synthesise = fileAttributes[
-                                    ProjectAttributes.XML_ATTRIBUTE_SYNTHESIS
-                                ]
-                            except KeyError:
-                                synthesise = None
+                            synthesise = file_attributes.get(
+                                ProjectAttributes.ATTRIBUTE_SYNTHESIS,
+                                None
+                            )
                         else:
                             synthesise = synthesis_enabled
 
@@ -424,7 +420,7 @@ class XmlProjectParser:
             # Override the file synthesis flag if the library is marked for
             # exclusion from synthesis
             if synthesise is not None:
-                attribs[ProjectAttributes.XML_ATTRIBUTE_SYNTHESIS] = synthesise
+                attribs[ProjectAttributes.ATTRIBUTE_SYNTHESIS] = synthesise
             path = attribs['path']
             del attribs['path']
             project_object.add_file(
@@ -446,12 +442,12 @@ class XmlProjectParser:
         project_dictionary. Any files containedwithin the library will be
         added to the project_dictionary under that library"""
         attribs = XmlProjectParser._get_node_attributes(child, root)
-        if ProjectAttributes.XML_ATTRIBUTE_NAME not in attribs:
+        if ProjectAttributes.ATTRIBUTE_NAME not in attribs:
             log.warning('Ignoring library with no name specified')
             return
-        library_name = attribs[ProjectAttributes.XML_ATTRIBUTE_NAME]
+        library_name = attribs[ProjectAttributes.ATTRIBUTE_NAME]
         if synthesise is None:
-            synthesise = attribs[ProjectAttributes.XML_ATTRIBUTE_SYNTHESIS]
+            synthesise = attribs[ProjectAttributes.ATTRIBUTE_SYNTHESIS]
         # Add all files in this library node to the project
         for file in filter(
             lambda x: x.nodeName == ProjectAttributes.XML_NODE_FILE,

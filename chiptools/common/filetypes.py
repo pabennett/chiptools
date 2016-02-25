@@ -66,11 +66,11 @@ class ProjectAttributes:
     XML_NODE_GENERIC = 'generic'
     XML_NODE_UNITTEST = 'unittest'
     # XML attributes identify parameters that can be applied to XML nodes.
-    XML_ATTRIBUTE_NAME = 'name'
-    XML_ATTRIBUTE_PATH = 'path'
-    XML_ATTRIBUTE_FLOW = 'flow'
-    XML_ATTRIBUTE_PREPROCESSOR = 'preprocessor'
-    XML_ATTRIBUTE_SYNTHESIS = 'synthesise'
+    ATTRIBUTE_NAME = 'name'
+    ATTRIBUTE_PATH = 'path'
+    ATTRIBUTE_FLOW = 'flow'
+    ATTRIBUTE_PREPROCESSOR = 'preprocessor'
+    ATTRIBUTE_SYNTHESIS = 'synthesise'
     # These XML attributes are required configuration attributes that control
     # which tools and directories are used by the framework. They must be
     # present in the project file.
@@ -93,12 +93,12 @@ class ProjectAttributes:
 
 # Process each of the file attributes using the following functions
 NODE_PROCESSOR = {
-    ProjectAttributes.XML_ATTRIBUTE_PATH: utils.relative_path_to_abs,
+    ProjectAttributes.ATTRIBUTE_PATH: utils.relative_path_to_abs,
     ProjectAttributes.ATTRIBUTE_SIM_DIR: utils.relative_path_to_abs,
     ProjectAttributes.ATTRIBUTE_SYNTH_DIR: utils.relative_path_to_abs,
-    ProjectAttributes.XML_ATTRIBUTE_PREPROCESSOR: utils.relative_path_to_abs,
+    ProjectAttributes.ATTRIBUTE_PREPROCESSOR: utils.relative_path_to_abs,
     ProjectAttributes.ATTRIBUTE_REPORTER: utils.relative_path_to_abs,
-    ProjectAttributes.XML_ATTRIBUTE_SYNTHESIS:
+    ProjectAttributes.ATTRIBUTE_SYNTHESIS:
         lambda x, root: x.lower() != 'false',
     ProjectAttributes.ATTRIBUTE_SIM_TOOL: lambda x, root: x,
     ProjectAttributes.ATTRIBUTE_SYNTH_TOOL: lambda x, root: x,
@@ -107,10 +107,10 @@ NODE_PROCESSOR = {
 
 # Default node attributes for file objects
 FILE_DEFAULTS = {
-    ProjectAttributes.XML_ATTRIBUTE_PATH: None,
-    ProjectAttributes.XML_ATTRIBUTE_PREPROCESSOR: None,
+    ProjectAttributes.ATTRIBUTE_PATH: None,
+    ProjectAttributes.ATTRIBUTE_PREPROCESSOR: None,
     ProjectAttributes.ATTRIBUTE_REPORTER: None,
-    ProjectAttributes.XML_ATTRIBUTE_SYNTHESIS: None,
+    ProjectAttributes.ATTRIBUTE_SYNTHESIS: None,
     ProjectAttributes.ATTRIBUTE_SIM_DIR: None,
     ProjectAttributes.ATTRIBUTE_SYNTH_DIR: None,
     ProjectAttributes.ATTRIBUTE_SIM_TOOL: None,
@@ -121,7 +121,7 @@ FILE_DEFAULTS = {
 class UnitTestFile(object):
     """The UnitTestFile object provides a container for Python test shims."""
     def __init__(self, **kwargs):
-        self.path = kwargs[ProjectAttributes.XML_ATTRIBUTE_PATH]
+        self.path = kwargs[ProjectAttributes.ATTRIBUTE_PATH]
         self.fileType = FileType.Python
         self.testsuite = None
 
@@ -138,11 +138,11 @@ class File(object):
         # MD5 sum for change detection
         self.md5 = ''
         # The path to this source file
-        self.path = kwargs[ProjectAttributes.XML_ATTRIBUTE_PATH]
+        self.path = kwargs[ProjectAttributes.ATTRIBUTE_PATH]
         # A flag to indicate whether or not this file should be included for
         # synthesis. It not specified it will default to True.
         self.synthesise = kwargs.get(
-            ProjectAttributes.XML_ATTRIBUTE_SYNTHESIS,
+            ProjectAttributes.ATTRIBUTE_SYNTHESIS,
             True
         )
         self.synthesise = True if self.synthesise is None else self.synthesise
@@ -150,7 +150,7 @@ class File(object):
         # preprocessor object that can edit the associated source file before
         # it is passed to synthesis.
         self.preprocessor = kwargs.get(
-            ProjectAttributes.XML_ATTRIBUTE_PREPROCESSOR,
+            ProjectAttributes.ATTRIBUTE_PREPROCESSOR,
             None
         )
         # Automatically discover the filetype from the extension
@@ -203,9 +203,9 @@ class File(object):
 class Constraints(object):
     """The constraints object provides a container for constraints files"""
     def __init__(self, **kwargs):
-        self.path = kwargs[ProjectAttributes.XML_ATTRIBUTE_PATH]
+        self.path = kwargs[ProjectAttributes.ATTRIBUTE_PATH]
         self.fileType = FileType.Unknown
-        self.flow = kwargs.get(ProjectAttributes.XML_ATTRIBUTE_FLOW, None)
+        self.flow = kwargs.get(ProjectAttributes.ATTRIBUTE_FLOW, None)
         fileName, fileExtension = os.path.splitext(self.path)
         fileExtension = fileExtension.strip(' ')
         if fileExtension in fileExtensionsLookup.keys():
