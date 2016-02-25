@@ -16,3 +16,8 @@ class ProjectFileException(Exception):
 
 class SynthesisException(Exception):
     pass
+
+
+# Backport FileNotFoundError for Python 2.7
+class FileNotFoundError(OSError):
+    pass
