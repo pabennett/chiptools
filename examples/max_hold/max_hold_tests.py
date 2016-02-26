@@ -33,18 +33,10 @@ except ImportError:
 # the ChipToolsTest class (which is derived from unittest.TestCase)
 from chiptools.testing.testloader import ChipToolsTest
 
-# Import the Max Hold project so that we can run these tests using an external
-# tool such as Nosetests if desired:
-try:
-    import max_hold_project
-    project = max_hold_project.project
-except:
-    project = None
-
 # The logging system is already configured by ChipTools, any messages you print
 # here will be formatted and displayed using the ChipTools logger config.
 log = logging.getLogger(__name__)
-
+base = os.path.dirname(__file__)
 
 def get_random_data(data_width, sequence_lengths):
     return [
@@ -77,7 +69,7 @@ class MaxHoldTests(ChipToolsTest):
     library = 'lib_tb_max_hold'
     # Add a reference to the Max Hold project so that we can run this TestCase
     # directly as well as through the ChipTools testing framework.
-    project = project
+    project = os.path.join(base, 'max_hold.xml')
 
     def setUp(self):
         """Place any code that is required to prepare simulator inputs in this
