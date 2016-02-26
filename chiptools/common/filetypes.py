@@ -128,14 +128,14 @@ class ProjectAttributes:
         return attributes
 
     @staticmethod
-    def get_processed_attribute(attributes, root, name):
+    def get_processed_attribute(attribute, root, name):
         """
-        Return a single attribute from the attributes dictionary using name as
-        a key and root as the project root. The returned attribute is processed
-        according to the functions in the NODE_PROCESSOR dictionary.
+        Process the given attribute according to the functions in the
+        NODE_PROCESSOR dictionary using the name as a key and the root as the
+        project root.
         """
-        if name in attributes and name in NODE_PROCESSOR:
-            return NODE_PROCESSOR[name](attributes[name], root)
+        if name in NODE_PROCESSOR:
+            return NODE_PROCESSOR[name](attribute, root)
         return FILE_DEFAULTS.get(name, None)
 
 # Process each of the file attributes using the following functions
