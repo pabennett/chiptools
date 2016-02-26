@@ -195,6 +195,23 @@ def process(data, path):
         self.assertFalse(os.path.exists(self.project_path))
         self.assertFalse(os.path.exists(self.reporter_path))
 
+    def run_and_check_preprocessors(self, project):
+        project.run_preprocessors()
+        regex = re.compile('-- Preprocessed at (\d+){2}:(\d+){2}:(\d+){2}')
+        for libname in self.project_structure.keys():
+            files = self.project_structure[libname]
+            for path in files:
+                path = os.path.join(self.root, libname, path)
+                with open(path, 'r') as f:
+                    data = f.readlines()
+                    match = regex.match(data[0])
+                    self.assertIsNotNone(
+                        match,
+                        msg='File {0} was not correctly preprocessed.'.format(
+                            path
+                        )
+                    )
+
 
 class TestXmlProjectLoading(TestProjectInterface):
     def test_synthesis_directory(self):
@@ -297,21 +314,7 @@ class TestXmlProjectLoading(TestProjectInterface):
             )
         )
         self.assertTrue(len(preprocessors) > 0)
-        project.run_preprocessors()
-        regex = re.compile('-- Preprocessed at (\d+){2}:(\d+){2}:(\d+){2}')
-        for libname in self.project_structure.keys():
-            files = self.project_structure[libname]
-            for path in files:
-                path = os.path.join(self.root, libname, path)
-                with open(path, 'r') as f:
-                    data = f.readlines()
-                    match = regex.match(data[0])
-                    self.assertIsNotNone(
-                        match,
-                        msg='File {0} was not correctly preprocessed.'.format(
-                            path
-                        )
-                    )
+        self.run_and_check_preprocessors(project)
 
 
 class TestManualProjectInterface(TestProjectInterface):
@@ -363,6 +366,40 @@ class TestManualProjectInterface(TestProjectInterface):
         self.assertTrue(
             callable(project.get_reporter())
         )
+
+    def test_preprocessor(self):
+        project = Project()
+        for libname in self.project_structure.keys():
+            files = self.project_structure[libname]
+            project.add_files(
+                root=os.path.join(self.root, libname),
+                library=libname,
+                pattern='*.vhd',
+                preprocessor=self.preprocessor_path
+            )
+
+        self.run_and_check_preprocessors(project)
+
+    def test_constraints(self):
+        project = Project()
+        for constraints in self.project_constraints:
+            project.add_constraints(constraints, flow='dummy_flow')
+        constraints = project.get_constraints()
+        self.assertEquals(
+            len(constraints),
+            len(self.project_constraints),
+            msg='Incorrect number of constraints added to project.'
+        )
+        self.assertTrue(
+            len(constraints) > 0,
+            msg='Not correctly tested as no constraints are present.'
+        )
+        for idx in range(len(constraints)):
+            self.assertEquals(
+                constraints[idx].path,
+                os.path.abspath(self.project_constraints[idx]),
+                msg='Constraints path was incorrectly processed.'
+            )
 
 
 class TestUninitialisedProjectCLI(TestProjectInterface):

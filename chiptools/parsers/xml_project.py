@@ -7,18 +7,9 @@ import time
 from xml.dom import minidom
 
 from chiptools.common import utils
-from chiptools.common.filetypes import (
-    ProjectAttributes, NODE_PROCESSOR, FILE_DEFAULTS
-)
-
+from chiptools.common.filetypes import ProjectAttributes
 
 log = logging.getLogger(__name__)
-
-
-PROJECT_DICT_CONSTRAINTS_KEY = 'constraints_files'
-PROJECT_DICT_SOURCE_FILES_KEY = 'source_hdl_files'
-PROJECT_DICT_ORDERED_FILE_SET = 'ordered_file_set'
-PROJECT_DICT_GENERICS = 'generics'
 
 
 class XmlProjectParser:
@@ -177,7 +168,6 @@ class XmlProjectParser:
 
     """
 
-
     @staticmethod
     def load_project(path, project_object):
         """
@@ -231,7 +221,8 @@ class XmlProjectParser:
                     if child.nodeName == ProjectAttributes.XML_NODE_PROJECT:
                         attribs = ProjectAttributes.process_attributes(
                             child.attributes,
-                            project_root
+                            project_root,
+                            default=ProjectAttributes.PROJECT_NODE_DEFAULTS
                         )
                         # If this whole node should not be synthesised, ignore
                         # any child flags otherwise get the child synthesis
@@ -321,9 +312,12 @@ class XmlProjectParser:
                         if synthesis_enabled is None:
                             synthesise = (
                                 ProjectAttributes.get_processed_attribute(
-                                    child.attributes,
-                                    ProjectAttributes.ATTRIBUTE_SYNTHESIS,
-                                    project_root
+                                    child.attributes.get(
+                                        ProjectAttributes.ATTRIBUTE_SYNTHESIS,
+                                        None
+                                    ),
+                                    project_root,
+                                    ProjectAttributes.ATTRIBUTE_SYNTHESIS
                                 )
                             )
                         else:
@@ -377,22 +371,24 @@ class XmlProjectParser:
         the project_root as a reference"""
         attribs = ProjectAttributes.process_attributes(
             file_node.attributes,
-            root
+            root,
+            defaults=ProjectAttributes.FILE_NODE_DEFAULTS
         )
-        if attribs is not None:
+        if attribs[ProjectAttributes.ATTRIBUTE_PATH] is not None:
             # Override the file synthesis flag if the library is marked for
             # exclusion from synthesis
             if synthesise is not None:
                 attribs[ProjectAttributes.ATTRIBUTE_SYNTHESIS] = synthesise
-            path = attribs['path']
-            del attribs['path']
+            # Path is passed directly, so remove it from kwargs
+            path = attribs[ProjectAttributes.ATTRIBUTE_PATH]
+            del attribs[ProjectAttributes.ATTRIBUTE_PATH]
             project_object.add_file(
                 path=path,
                 library=library_name,
                 **attribs
             )
         else:
-            log.debug('Ignoring empty file tag')
+            log.warning('Ignoring file with no path.')
 
     @staticmethod
     def _add_library(
@@ -404,20 +400,24 @@ class XmlProjectParser:
         """Process the given library node and add it to the
         project_dictionary. Any files containedwithin the library will be
         added to the project_dictionary under that library"""
-        attribs = ProjectAttributes.process_attributes(child.attributes, root)
-        if ProjectAttributes.ATTRIBUTE_NAME not in attribs:
+        attribs = ProjectAttributes.process_attributes(
+            child.attributes, 
+            root,
+            defaults=ProjectAttributes.LIBRARY_NODE_DEFAULTS
+        )
+        if attribs[ProjectAttributes.ATTRIBUTE_NAME] is None:
             log.warning('Ignoring library with no name specified')
             return
         library_name = attribs[ProjectAttributes.ATTRIBUTE_NAME]
         if synthesise is None:
             synthesise = attribs[ProjectAttributes.ATTRIBUTE_SYNTHESIS]
         # Add all files in this library node to the project
-        for file in filter(
+        for file_node in filter(
             lambda x: x.nodeName == ProjectAttributes.XML_NODE_FILE,
             child.childNodes
         ):
             XmlProjectParser._add_file(
-                file,
+                file_node,
                 library_name,
                 root,
                 project_object,
@@ -426,10 +426,14 @@ class XmlProjectParser:
 
     @staticmethod
     def _add_constraints(child, root, project_object):
-        attribs = ProjectAttributes.process_attributes(child.attributes, root)
-        path = attribs['path']
+        attribs = ProjectAttributes.process_attributes(
+            child.attributes, 
+            root,
+            defaults=ProjectAttributes.CONSTRAINTS_NODE_DEFAULTS
+        )
+        path = attribs[ProjectAttributes.ATTRIBUTE_PATH]
         # Path is passed separately, so delete it from the kwargs dict.
-        del attribs['path']
+        del attribs[ProjectAttributes.ATTRIBUTE_PATH]
         project_object.add_constraints(
             path,
             **attribs
@@ -437,10 +441,14 @@ class XmlProjectParser:
 
     @staticmethod
     def _add_unittest(child, root, project_object):
-        attribs = ProjectAttributes.process_attributes(child.attributes, root)
-        path = attribs['path']
+        attribs = ProjectAttributes.process_attributes(
+            child.attributes, 
+            root,
+            defaults=ProjectAttributes.UNITTEST_NODE_DEFAULTS
+        )
+        path = attribs[ProjectAttributes.ATTRIBUTE_PATH]
         # Path is passed separately, so delete it from the kwargs dict.
-        del attribs['path']
+        del attribs[ProjectAttributes.ATTRIBUTE_PATH]
         project_object.add_unittest(
             path,
             **attribs

@@ -81,6 +81,7 @@ class ProjectAttributes:
     ATTRIBUTE_SYNTH_TOOL = 'synthesiser'
     ATTRIBUTE_SYNTH_PART = 'part'
     ATTRIBUTE_REPORTER = 'reporter'
+    ATTRIBUTE_LIBRARY = 'library'
 
     # Additional tool arguments can be attached to File objects by supplying
     # attributes using the naming convention:
@@ -91,6 +92,62 @@ class ProjectAttributes:
     XML_ADDITIONAL_TOOL_ARGS_RE = re.compile(
         'args_([A-Z,a-z]+)_([A-Z,a-z]+)'
     )
+
+    def bool_processor(value, root):
+        if isinstance(value, bool):
+            return value
+        elif value is None:
+            return None
+        else:
+            return value.lower() != 'false'
+
+    def string_tolower(value, root):
+        if isinstance(value, str):
+            return value.lower()
+        else:
+            return value
+
+    # Process nodes according to the processor functions contained within this
+    # dictionary.
+    NODE_PROCESSOR = {
+        ATTRIBUTE_PATH: utils.relative_path_to_abs,
+        ATTRIBUTE_SIM_DIR: utils.relative_path_to_abs,
+        ATTRIBUTE_SYNTH_DIR: utils.relative_path_to_abs,
+        ATTRIBUTE_PREPROCESSOR: utils.relative_path_to_abs,
+        ATTRIBUTE_REPORTER: utils.relative_path_to_abs,
+        ATTRIBUTE_SYNTHESIS: bool_processor,
+        ATTRIBUTE_SIM_TOOL: lambda x, root: x,
+        ATTRIBUTE_SYNTH_TOOL: lambda x, root: x,
+        ATTRIBUTE_SYNTH_PART: lambda x, root: x,
+        ATTRIBUTE_LIBRARY: string_tolower,
+    }
+
+    # Default fields for different node types
+    FILE_NODE_DEFAULTS = {
+        ATTRIBUTE_PATH: None,
+        ATTRIBUTE_SYNTHESIS: None,
+        ATTRIBUTE_PREPROCESSOR: None,
+    }
+
+    PROJECT_NODE_DEFAULTS = {
+        ATTRIBUTE_SYNTHESIS: None,
+        ATTRIBUTE_PATH: None,
+    }
+
+    LIBRARY_NODE_DEFAULTS = {
+        ATTRIBUTE_NAME: None,
+        ATTRIBUTE_SYNTHESIS: None,
+    }
+
+    UNITTEST_NODE_DEFAULTS = {
+        ATTRIBUTE_PATH: None,
+    }
+
+    CONSTRAINTS_NODE_DEFAULTS = {
+        ATTRIBUTE_PATH: None,
+        ATTRIBUTE_FLOW: None,
+    }
+
     @staticmethod
     def cast_attributes_to_dict(attributes):
         """
@@ -104,27 +161,43 @@ class ProjectAttributes:
         return attributes
 
     @staticmethod
-    def process_attributes(attributes, root):
-        """Return the attributes as a dictionary if any attributes exist.
-        Attributes will be pre-processed according to the NODE_PROCESSOR
-        function dictionary. The returned dictionary will contain AT LEAST
-        the keys present in NODE_PROCESSOR, additional optional keys may
-        also be present.
-
-        Attributes can be a dictionary or an XML NamedNodeMap.
+    def process_attributes(attributes, root, defaults={}):
+        """Process each of the attributes in the supplied dictionary or
+        xml.dom.minidom.NamedNodeMap using the associated functions in the
+        NODE_PROCESSOR dictionary and return an updated dictionary of the
+        attribute name, value pairs. 
+        
+        If the defaults dictionary is supplied, the returned dictionary will
+        contain *at least* the keys and associated values present in the
+        defaults dictionary.
+        
+        The root argument is passed to the NODE_PROCESSOR functions and it
+        should be a string path pointing to the project root directory, this
+        ensures any file paths can be cast to absolute paths correctly.
         """
+        # Ensure that the attributes argument is a dictionary type:
         attributes = ProjectAttributes.cast_attributes_to_dict(attributes)
-        for attribute, function in NODE_PROCESSOR.items():
-            # If the attribute exists process it using the processor function
-            # otherwise insert a default value
-            if attribute in attributes:
-                attributes[attribute] = function(
-                    attributes[attribute],
-                    root
-                )
-            else:
-                # Ensure the attribute is initialised to its default
-                attributes[attribute] = FILE_DEFAULTS[attribute]
+
+        # Obtain a list of the attribute names to process, the result will
+        # contain a value for each of these keys:
+        keys = set(list(attributes.keys()) + list(defaults.keys()))
+        # Process each of the attributes using the NODE_PROCESSOR
+        for name in keys:
+            # Obtain the function to process the attribute value from the
+            # NODE_PROCESSOR dictionary if available, otherwise obtain the
+            # value from the defaults dictionary. If neither dictionaries
+            # contain an entry for the attribute then return the original
+            # value.
+            processor = ProjectAttributes.NODE_PROCESSOR.get(
+                name,
+                # Return the original value.
+                lambda x, root: x 
+            )
+            value = attributes.get(name, defaults.get(name, None))
+            attributes[name] = value
+            if value is not None:
+                attributes[name] = processor(value, root)
+            
         return attributes
 
     @staticmethod
@@ -132,38 +205,14 @@ class ProjectAttributes:
         """
         Process the given attribute according to the functions in the
         NODE_PROCESSOR dictionary using the name as a key and the root as the
-        project root.
+        project root. The original attribute is returned if no NODE_PROCESSOR
+        function can be found that matches the name.
         """
-        if name in NODE_PROCESSOR:
-            return NODE_PROCESSOR[name](attribute, root)
-        return FILE_DEFAULTS.get(name, None)
+        return ProjectAttributes.NODE_PROCESSOR.get(
+            name, 
+            lambda x, root: x
+        )(attribute, root)
 
-# Process each of the file attributes using the following functions
-NODE_PROCESSOR = {
-    ProjectAttributes.ATTRIBUTE_PATH: utils.relative_path_to_abs,
-    ProjectAttributes.ATTRIBUTE_SIM_DIR: utils.relative_path_to_abs,
-    ProjectAttributes.ATTRIBUTE_SYNTH_DIR: utils.relative_path_to_abs,
-    ProjectAttributes.ATTRIBUTE_PREPROCESSOR: utils.relative_path_to_abs,
-    ProjectAttributes.ATTRIBUTE_REPORTER: utils.relative_path_to_abs,
-    ProjectAttributes.ATTRIBUTE_SYNTHESIS:
-        lambda x, root: x.lower() != 'false',
-    ProjectAttributes.ATTRIBUTE_SIM_TOOL: lambda x, root: x,
-    ProjectAttributes.ATTRIBUTE_SYNTH_TOOL: lambda x, root: x,
-    ProjectAttributes.ATTRIBUTE_SYNTH_PART: lambda x, root: x,
-}
-
-# Default node attributes for file objects
-FILE_DEFAULTS = {
-    ProjectAttributes.ATTRIBUTE_PATH: None,
-    ProjectAttributes.ATTRIBUTE_PREPROCESSOR: None,
-    ProjectAttributes.ATTRIBUTE_REPORTER: None,
-    ProjectAttributes.ATTRIBUTE_SYNTHESIS: None,
-    ProjectAttributes.ATTRIBUTE_SIM_DIR: None,
-    ProjectAttributes.ATTRIBUTE_SYNTH_DIR: None,
-    ProjectAttributes.ATTRIBUTE_SIM_TOOL: None,
-    ProjectAttributes.ATTRIBUTE_SYNTH_TOOL: None,
-    ProjectAttributes.ATTRIBUTE_SYNTH_PART: None,
-}
 
 class UnitTestFile(object):
     """The UnitTestFile object provides a container for Python test shims."""

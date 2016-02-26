@@ -9,9 +9,7 @@ from chiptools.common import exceptions
 from chiptools.common import utils
 from chiptools.common.filetypes import File
 from chiptools.common.filetypes import Constraints
-from chiptools.common.filetypes import (
-    ProjectAttributes, NODE_PROCESSOR, FILE_DEFAULTS
-)
+from chiptools.common.filetypes import ProjectAttributes
 from chiptools.common.filetypes import UnitTestFile
 from chiptools.core.preprocessor import Preprocessor
 from chiptools.core import reporter
@@ -57,15 +55,12 @@ class Project:
 
     def add_file(self, path, library='work', **attribs):
         """Add the given file to the project."""
-        path = utils.relative_path_to_abs(path, self.root)
-        # Ensure library names are lower case
-        library = library.lower()
+        attribs[ProjectAttributes.ATTRIBUTE_PATH] = path
+        attribs[ProjectAttributes.ATTRIBUTE_LIBRARY] = library
+        # Process the attributes to ensure they conform to our expectations
+        attribs = ProjectAttributes.process_attributes(attribs, self.root)
         # Default synthesis to true
-        file_object = File(
-            path=path,
-            library=library,
-            **attribs
-        )
+        file_object = File(**attribs)
         if library not in self.project_data:
             self.project_data[library] = []
         if file_object not in self.project_data[library]:
@@ -74,30 +69,34 @@ class Project:
             self.project_data[library].append(file_object)
             self.file_list.append(file_object)
 
-    def add_files(self, root, library='work', pattern='*.*'):
+    def add_files(self, root, library='work', pattern='*.*', **attribs):
         """Add all files in the given directory to the project. The optional
         pattern can be used to filter which paths are added.
         """
         if not os.path.exists(root):
             log.error('Project (add_all): invalid path: {0}'.format(root))
         for filepath in glob.glob(os.path.join(root, pattern)):
-            self.add_file(filepath, library)
+            self.add_file(filepath, library, **attribs)
 
     def add_constraints(self, path, **attribs):
         """Add the given constraints file to the project."""
-        path = utils.relative_path_to_abs(path, self.root)
-        self.constraints.append(Constraints(path=path, **attribs))
+        attribs[ProjectAttributes.ATTRIBUTE_PATH] = path
+        # Process the attributes to ensure they conform to our expectations
+        attribs = ProjectAttributes.process_attributes(attribs, self.root)
+        self.constraints.append(Constraints(**attribs))
 
     def add_unittest(self, path, **attribs):
         """Add the given TestSuite file to the project."""
-        path = utils.relative_path_to_abs(path, self.root)
-        unit = UnitTestFile(path=path, **attribs)
+        attribs[ProjectAttributes.ATTRIBUTE_PATH] = path
+        # Process the attributes to ensure they conform to our expectations
+        attribs = ProjectAttributes.process_attributes(attribs, self.root)
+        unit = UnitTestFile(**attribs)
         # Perform TestSuite loading on the supplied path
-        if os.path.exists(path):
+        if os.path.exists(attribs[ProjectAttributes.ATTRIBUTE_PATH]):
             # Convert the testsuite path into an unpacked testsuite
             # for each file object that has a link to a test suite.
             unpacked_testsuite = testloader.load_tests(
-                path,
+                attribs[ProjectAttributes.ATTRIBUTE_PATH],
                 self.get_simulation_directory(),
             )
             # Modify the file object, replacing the testsuite path
@@ -110,9 +109,11 @@ class Project:
         """
         Add a configuration key, value mapping for the project.
         """
-        # Format the value using the NODE_PROCESSOR function if available.
-        if name in NODE_PROCESSOR:
-            value = NODE_PROCESSOR[name](value, self.root)
+        value = ProjectAttributes.get_processed_attribute(
+            value,
+            self.root,
+            name
+        )
         if self.config.get(name, None) is not None and not force:
             log.warning(
                 'Ignoring duplicate configuration attribute ' +
