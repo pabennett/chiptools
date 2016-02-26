@@ -3,12 +3,8 @@ import logging
 import traceback
 import os
 import sys
-if sys.version_info < (3, 0, 0):
-    import imp
-else:
-    import importlib.machinery
-
 from chiptools.common import utils
+from chiptools.core.project import Project
 
 log = logging.getLogger(__name__)
 
@@ -85,20 +81,17 @@ class ChipToolsTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if not cls.environment_initialised and cls.project is not None:
+            project = Project()
+            project.load_project(cls.project)
+            cls.project = project
             # Using external test runner (such as Nosetests) to execute this
             # test. The test environment therefore needs to be loaded from
             # the Project instance:
-            if sys.version_info < (3, 0, 0):
-                # Python 2.7 requires methods to be called with a type instance
-                # so the load_environment method cannot be used here. Directly
-                # operate on the class instead.
-                simulator, root, libs = cls.get_environment(cls.project)
-                cls.simulator = simulator
-                cls.simulation_root = root
-                cls.simulation_libraries = libs
-                cls.environment_initialised = True
-            else:
-                cls.load_environment(cls, cls.project)
+            simulator, root, libs = cls.get_environment(cls.project)
+            cls.simulator = simulator
+            cls.simulation_root = root
+            cls.simulation_libraries = libs
+            cls.environment_initialised = True
             # Compile the design if required (simulators with caching will
             # perform this step once).
             cls.simulator.compile_project(includes=cls.simulation_libraries)
@@ -154,39 +147,3 @@ class ChipToolsTest(unittest.TestCase):
         )
         return (ret_val, stdout, stderr)
 
-
-def load_tests(path, simulation_path):
-    """Import the test shim python module given by path and return a
-    collection of Unittest classes for each of the tests found in the shim"""
-    if not os.path.exists(path):
-        log.error('File not found, aborting test package load: ' + str(path))
-        return
-
-    log.debug('Loading test package: ' + path + '...')
-
-    try:
-        test_loader = unittest.TestLoader()
-        # Load modules with support for Python 2 or 3
-        if sys.version_info < (3, 0, 0):
-            module = imp.load_source(
-                'chiptools_tests_' + os.path.basename(path).split('.')[0],
-                path
-            )
-            suite = test_loader.loadTestsFromModule(module)
-        else:
-            module_loader = importlib.machinery.SourceFileLoader(
-                'chiptools_tests_' + os.path.basename(path).split('.')[0],
-                path
-            )
-            suite = test_loader.loadTestsFromModule(
-                module_loader.load_module()
-            )
-    except:
-        log.error(
-            'The module could not be imported due to the ' +
-            ' following error:'
-        )
-        log.error(traceback.format_exc())
-        return None
-
-    return suite

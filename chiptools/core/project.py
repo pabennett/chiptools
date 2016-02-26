@@ -4,6 +4,7 @@ import os
 import traceback
 import re
 import unittest
+import sys
 
 from chiptools.common import exceptions
 from chiptools.common import utils
@@ -16,12 +17,52 @@ from chiptools.core import reporter
 from chiptools.core.cache import FileCache
 from chiptools.parsers import options
 from chiptools.parsers import xml_project
-from chiptools.testing import testloader
 from chiptools.testing.custom_runners import HTMLTestRunner
 from chiptools.wrappers.wrapper import ToolWrapper
+if sys.version_info < (3, 0, 0):
+    import imp
+else:
+    import importlib.machinery
+
 
 log = logging.getLogger(__name__)
 
+
+def load_tests(path, simulation_path):
+    """Import the test shim python module given by path and return a
+    collection of Unittest classes for each of the tests found in the shim"""
+    if not os.path.exists(path):
+        log.error('File not found, aborting test package load: ' + str(path))
+        return
+
+    log.debug('Loading test package: ' + path + '...')
+
+    try:
+        test_loader = unittest.TestLoader()
+        # Load modules with support for Python 2 or 3
+        if sys.version_info < (3, 0, 0):
+            module = imp.load_source(
+                'chiptools_tests_' + os.path.basename(path).split('.')[0],
+                path
+            )
+            suite = test_loader.loadTestsFromModule(module)
+        else:
+            module_loader = importlib.machinery.SourceFileLoader(
+                'chiptools_tests_' + os.path.basename(path).split('.')[0],
+                path
+            )
+            suite = test_loader.loadTestsFromModule(
+                module_loader.load_module()
+            )
+    except:
+        log.error(
+            'The module could not be imported due to the ' +
+            ' following error:'
+        )
+        log.error(traceback.format_exc())
+        return None
+
+    return suite
 
 class Project:
     def __init__(self, root=os.getcwd()):
@@ -95,7 +136,7 @@ class Project:
         if os.path.exists(attribs[ProjectAttributes.ATTRIBUTE_PATH]):
             # Convert the testsuite path into an unpacked testsuite
             # for each file object that has a link to a test suite.
-            unpacked_testsuite = testloader.load_tests(
+            unpacked_testsuite = load_tests(
                 attribs[ProjectAttributes.ATTRIBUTE_PATH],
                 self.get_simulation_directory(),
             )
