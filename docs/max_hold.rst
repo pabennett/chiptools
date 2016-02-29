@@ -9,10 +9,10 @@ build a simple VHDL component.
 Introduction
 ------------
 
-The **Max Hold** example implements a basic component in VHDL to output the 
-maximum value of an input sequence until it is reset. For example, if such a 
-component were to be fed an oscillating input with steadily increasing
-amplitude we would expect the following result:
+The **Max Hold** example implements a basic component to output the maximum
+value of an input sequence until it is reset. For example, if such a component
+were to be fed an oscillating input with steadily increasing amplitude we would
+expect the following result:
 
 .. image:: max_hold_demo.png
 
@@ -106,7 +106,7 @@ project wrapper.
     # on which simulation/synthesis tools are installed on your system.
     project.add_config('simulation_directory', 'simulation')
     project.add_config('synthesis_directory', 'synthesis')
-    project.add_config('simulator', 'modelsim')
+    project.add_config('simulator', 'ghdl')
     project.add_config('synthesiser', 'ise')
     project.add_config('part', 'xc6slx9-csg324-2')
 
@@ -120,7 +120,7 @@ component. You can assign values to top level port generics by using the
 .. code-block:: python
 
     # Synthesis generics can be assigned via the add_generic command, in this
-    # example we set the data_Width generic to 3:
+    # example we set the data_width generic to 3:
     project.add_generic('data_width', 3)
 
 Add Source Files
@@ -222,7 +222,7 @@ The example project file **max_hold.xml** provides the same configuration as
     <project>
         <config simulation_directory='simulation'/>
         <config synthesis_directory='synthesis'/>
-        <config simulator='vivado'/>
+        <config simulator='ghdl'/>
         <config synthesiser='vivado'/>
         <config part='xc7a100tcsg324-1'/>
         <unittest path='max_hold_tests.py'/>
