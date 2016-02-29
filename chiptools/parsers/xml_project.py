@@ -222,7 +222,7 @@ class XmlProjectParser:
                         attribs = ProjectAttributes.process_attributes(
                             child.attributes,
                             project_root,
-                            default=ProjectAttributes.PROJECT_NODE_DEFAULTS
+                            defaults=ProjectAttributes.PROJECT_NODE_DEFAULTS
                         )
                         # If this whole node should not be synthesised, ignore
                         # any child flags otherwise get the child synthesis

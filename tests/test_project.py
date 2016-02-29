@@ -49,7 +49,11 @@ begin
     COUNT <= std_logic_vector(local_count);
 end RTL;
 """
-
+    project_wrapper = """
+<project>
+    <project path='%(path)s'/>
+</project>
+"""
     project_data = """
 <project>
     <config
@@ -84,7 +88,8 @@ def process(data, path):
 """
     base = os.path.dirname(__file__)
     root = os.path.join(base, '..', 'tests', 'testprojects', 'project_checks')
-    project_path = os.path.join(root, 'dummy.xml')
+    child_project_path = os.path.join(root, 'dummy.xml')
+    project_path = os.path.join(root, 'master.xml')
     invalid_project_path = os.path.join(root, 'invalid.xml')
     reporter_path = os.path.join(root, 'reporter.py')
     preprocessor_path = os.path.join(root, 'preprocessor.py')
@@ -165,6 +170,13 @@ def process(data, path):
 
         with open(self.project_path, 'w') as f:
             f.write(
+                self.project_wrapper % dict(
+                    path=os.path.abspath(self.child_project_path)
+                )
+            )
+
+        with open(self.child_project_path, 'w') as f:
+            f.write(
                 self.project_data % dict(
                     synthesis_directory=self.synthesis_directory,
                     simulation_directory=self.simulation_directory,
@@ -179,6 +191,8 @@ def process(data, path):
             )
 
     def tearDown(self):
+        if os.path.exists(self.child_project_path):
+            os.remove(self.child_project_path)
         if os.path.exists(self.project_path):
             os.remove(self.project_path)
         if os.path.exists(self.reporter_path):
