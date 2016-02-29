@@ -106,7 +106,14 @@ class ChipToolsTest(unittest.TestCase):
                 log.debug(
                     '...finished initialising environment for {0}'.format(cls)
                 )
-
+        if cls.environment_type is None:
+            raise EnvironmentError(
+                'The simulation environment for this TestCase is not ' +
+                'initialised so the test cases cannot be executed. ' +
+                'If you are running this test directly ensure that ' +
+                'the TestCase class has a "project" attribute which ' +
+                'holds a path to a valid ChipTools project file.'
+            )
     def load_environment(self, project, tool_name=None):
         """
         Initialise the TestCase simulation environment using the supplied 
@@ -130,13 +137,6 @@ class ChipToolsTest(unittest.TestCase):
         log.debug('Finished load_environment call on {0}'.format(self))
 
     def simulate(self):
-        if self.environment_type is None:
-            raise EnvironmentError(
-                'The simulation environment for this TestCase is not ' +
-                'initialised so the test cases cannot be executed. ' +
-                'Ensure that a chiptools.core.project instance is stored ' +
-                'in the "project" attribute of this TestCase'
-            )
         # Simulate the testbench
         if len(self.generics.keys()) == 0:
             log.warning(
