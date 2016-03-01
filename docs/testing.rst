@@ -130,7 +130,7 @@ the implementation is correct:
     import numpy as np
     from chiptools.testing.testloader import ChipToolsTest
 
-    class TestFastFourierTransform:
+    class TestFastFourierTransform(ChipToolsTest):
 
         duration = 0  # Run forever
         library = 'my_test_lib'  # Testbench library
@@ -195,7 +195,7 @@ files and libraries required by the simulation environment:
     import os
     from chiptools.testing.testloader import ChipToolsTest
 
-    class TestFastFourierTransform:
+    class TestFastFourierTransform(ChipToolsTest):
 
         duration = 0
         library = 'my_test_lib'
