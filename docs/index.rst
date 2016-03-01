@@ -8,6 +8,7 @@ Contents
    getting_started
    max_hold
    project_format
+   testing
    
 
 Indices and tables
