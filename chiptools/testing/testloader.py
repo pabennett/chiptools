@@ -28,6 +28,8 @@ class ChipToolsTest(unittest.TestCase):
     ...     generics = {'data_width' : 3}  # Set data-width to 3
     ...     library = 'lib_tb_max_hold'  # Testbench library
     ...     entity = 'tb_max_hold'  # Entity to simulate
+    ...     # Defining a path to a project allows us to run this test case
+    ...     # with Nosetests etc. as well as through ChipTools.
     ...     project = os.path.join('max_hold.xml')
     ...     # The setUp method is called at the beginning of each test:
     ...     def setUp(self):
