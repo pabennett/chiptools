@@ -107,15 +107,21 @@ class BaseTests:
                 'Failure (\\d+)',
                 data
             )
+            errors = re.search(
+                'Error (\\d+)',
+                data
+            )
             passes = re.search(
                 'Pass (\\d+)',
                 data
             )
             self.assertIsNotNone(passes)
-            # Absence of 'Failures' in test report means nothing failed
             if failures is not None:
                 failures = int(failures.group(1))
                 self.assertEqual(failures, 0)
+            if errors is not None:
+                errors = int(errors.group(1))
+                self.assertEqual(errors, 0)
 
 ###############################################################################
 # Test the simulator wrappers using the Max Hold (VHDL) example
