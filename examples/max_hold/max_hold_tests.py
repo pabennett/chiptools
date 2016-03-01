@@ -86,8 +86,8 @@ class MaxHoldTests(ChipToolsTest):
         # Write the stimulus file to be used by the testbench
         self.write_stimulus(self.input_path, values, data_width)
         # Run the simulation
-        return_code, stdout, stderr = self.simulate()
-        self.assertEqual(return_code, 0)
+        self.return_code, self.sim_stdout, self.sim_stderr = self.simulate()
+        self.assertEqual(self.return_code, 0)
 
     def tearDown(self):
         """Insert any cleanup code to remove generated files in this method."""
