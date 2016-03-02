@@ -1,0 +1,13 @@
+language: python
+python:
+  - "2.7"
+  - "3.4"
+branches:
+  only:
+    - master
+before_install:
+  - sudo apt-get install -qq -y iverilog
+install:
+  - python setup.py install
+script:
+  - nosetests --with-doctest --with-xcoverage --with-xunit --with-xunit --cover-package=chiptools --cover-erase
