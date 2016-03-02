@@ -11,4 +11,4 @@ before_install:
 install:
   - python setup.py install
 script:
-  - nosetests --with-doctest --with-xcoverage --with-xunit --with-xunit --cover-package=chiptools --cover-erase
+  - nosetests --with-doctest --with-xcoverage --with-xunit --cover-package=chiptools --cover-erase
