@@ -112,9 +112,11 @@ class ChipToolsTest(unittest.TestCase):
     The following provides a convenient way of setting the project path so that
     your test can be run from any directory:
 
-    >>> base = os.path.dirname(__file__)
-    >>> # Now use os.path.join to build a relative path to the project.
-    >>> project = os.path.join(base, '..', 'my_project.xml')
+    >>> from chiptools.testing.testloader import ChipToolsTest
+    >>> class MyUnitTest(ChipToolsTest) 
+    ...     base = os.path.dirname(__file__)
+    ...     # Now use os.path.join to build a relative path to the project.
+    ...     project = os.path.join(base, '..', 'my_project.xml')
     """
 
     _environment_type = None
@@ -155,8 +157,9 @@ class ChipToolsTest(unittest.TestCase):
         For example, to build paths to a testbench input and output file you
         could do the following:
 
-        >>> self.tb_in = os.path.join(self.simulation_root, 'input.txt')
-        >>> self.tb_out = os.path.join(self.simulation_root, 'output.txt')
+        >>> def setUp(self):
+        ...     self.tb_in = os.path.join(self.simulation_root, 'input.txt')
+        ...     self.tb_out = os.path.join(self.simulation_root, 'output.txt')
         """
         return self._simulation_root
 
