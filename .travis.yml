@@ -6,7 +6,13 @@ branches:
   only:
     - master
 before_install:
+  # Icarus Verilog simulator
   - sudo apt-get install -qq -y iverilog
+  # GHDL (0.33 or greater is required, not available in repository.
+  # Temporarily pull 0.33 .deb from sourceforge and install
+  - wget http://netcologne.dl.sourceforge.net/project/ghdl-updates/Builds/ghdl-0.33/debian/ghdl_0.33-1ubuntu1_amd64.deb
+  - sudo dpkg -i ghdl_0.33-1ubuntu1_amd64.deb
+  # Nose code coverage
   - pip install -q nosexcover
 install:
   - python setup.py install
