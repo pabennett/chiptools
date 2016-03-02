@@ -7,6 +7,7 @@ branches:
     - master
 before_install:
   - sudo apt-get install -qq -y iverilog
+  - pip install -y -q nosexcover
 install:
   - python setup.py install
 script:
