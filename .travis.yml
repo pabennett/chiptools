@@ -1,3 +1,7 @@
+sudo:
+  required
+dist:
+  trusty
 language: python
 python:
   - "2.7"
@@ -6,9 +10,13 @@ branches:
   only:
     - master
 before_install:
+  - sudo apt-get -qq update
   # Icarus Verilog simulator
   - sudo apt-get install -qq -y iverilog
   # GHDL (0.33 or greater is required, not available in repository.
+  # Install GHDL dependencies
+  - sudo apt-get install -qq libgnat-4.8
+  - sudo apt-get install -qq libstdc++6
   # Temporarily pull 0.33 .deb from sourceforge and install
   - wget http://netcologne.dl.sourceforge.net/project/ghdl-updates/Builds/ghdl-0.33/debian/ghdl_0.33-1ubuntu1_amd64.deb
   - sudo dpkg -i ghdl_0.33-1ubuntu1_amd64.deb
