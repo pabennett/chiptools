@@ -13,6 +13,7 @@ Matplotlib plots of the stimulus input and expected/actual outputs if
 Matplotlib is available on your system.
 """
 
+from __future__ import division
 import os
 import random
 import logging
