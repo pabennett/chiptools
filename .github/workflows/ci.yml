@@ -1,0 +1,60 @@
+name: Smoke
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  tests:
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      OS: ${{ matrix.os }}
+      PYTHON: ${{ matrix.python-version }}
+      PYTHONIOENCODING: utf-8
+      PIP_DOWNLOAD_CACHE: ${{ github.workspace }}/../.pip_download_cache
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+        python-version: [3.6, 3.7, 3.8, 3.9]
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        submodules: true
+
+    - name: Install Ubuntu tool deps
+      run: |
+        sudo apt-get -qq update
+        sudo apt-get install -qq -y iverilog ghdl
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Add python requirements
+      run: |
+        python -m pip install --upgrade pip
+        pip install tox tox-gh-actions coverage coverage_python_version
+
+    - name: Run tests
+      run: |
+        tox
+      env:
+        PLATFORM: ${{ matrix.os }}
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        env_vars: OS,PYTHON
+
+    - name: Build sdist/wheel
+      run: |
+        tox -e deploy
