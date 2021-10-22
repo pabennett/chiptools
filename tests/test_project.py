@@ -399,7 +399,7 @@ class TestManualProjectInterface(TestProjectInterface):
         for constraints in self.project_constraints:
             project.add_constraints(constraints, flow='dummy_flow')
         constraints = project.get_constraints()
-        self.assertEquals(
+        self.assertEqual(
             len(constraints),
             len(self.project_constraints),
             msg='Incorrect number of constraints added to project.'
@@ -409,7 +409,7 @@ class TestManualProjectInterface(TestProjectInterface):
             msg='Not correctly tested as no constraints are present.'
         )
         for idx in range(len(constraints)):
-            self.assertEquals(
+            self.assertEqual(
                 constraints[idx].path,
                 os.path.abspath(self.project_constraints[idx]),
                 msg='Constraints path was incorrectly processed.'

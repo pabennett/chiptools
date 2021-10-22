@@ -1,5 +1,7 @@
 *.pyc
 *.cache
+*.egg-info
+dist/
 docs/_build
 docs/rce
 *.sublime-project

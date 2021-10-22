@@ -1,6 +1,6 @@
 **ChipTools** is a utility to automate FPGA build and verification
 
-[![Documentation Status](https://readthedocs.org/projects/chiptools/badge/?version=latest)](http://chiptools.readthedocs.org/en/latest/?badge=latest) [![Build Status](https://travis-ci.org/pabennett/chiptools.svg?branch=master)](https://travis-ci.org/pabennett/chiptools)
+[![Smoke](https://github.com/sarnold/chiptools/actions/workflows/ci.yml/badge.svg)](https://github.com/sarnold/chiptools/actions/workflows/ci.yml)
 
 ## What can it do?
 

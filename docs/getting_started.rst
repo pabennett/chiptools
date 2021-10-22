@@ -9,8 +9,8 @@ Dependencies
 ------------
 
 ChipTools has the following requirements:
-    * `Python 3.4 <https://www.python.org/downloads/>`_ 
-    * `Colorama <https://pypi.python.org/pypi/colorama>`_ *(Optional)* to support coloured terminal text on Windows platforms.
+    * `Python 3.6+ <https://www.python.org/downloads/>`_
+    * `Colorama <https://pypi.org/project/colorama/>`_ *(Optional)* to support coloured terminal text on Windows platforms.
 
 
 Installation
@@ -19,7 +19,7 @@ Installation
 ChipTools should work on any platform that can run Python 3 and your preferred
 FPGA simulation and synthesis tools.
 
-Clone the ChipTools repository to your system (or `download it here <https://github.com/pabennett/chiptools/archive/master.zip>`_):
+Clone the ChipTools repository to your system (or download the `latest tag <https://github.com/pabennett/chiptools/tags>` or master tarball from github):
 
 .. code-block:: bash
 

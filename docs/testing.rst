@@ -14,7 +14,7 @@ used on your FPGA designs.
 
 Before attempting to create your own FPGA unit tests in ChipTools you
 should first acquaint yourself with the `Python Unittest framework
-<https://docs.python.org/3.5/library/unittest.html>`_ to understand how
+<https://docs.python.org/3.9/library/unittest.html>`_ to understand how
 the test flow and assertions work.
 
 Test Flow
@@ -25,7 +25,7 @@ during different points in the test, this allows the designer to prepare the
 test environment and inputs, execute the tests and then clean up temporary
 files and close unused processes. The full detail of the pre-defined setUp/tearDown
 functions can be found in the `Python Unittest docs
-<https://docs.python.org/3.5/library/unittest.html>`_, a typical test flow is
+<https://docs.python.org/3.9/library/unittest.html>`_, a typical test flow is
 given below:
 
     #. setUpModule
@@ -181,7 +181,7 @@ External Test Runners
 ---------------------
 
 Perhaps you would like to set up a continous integration system such as
-`Jenkins <https://jenkins-ci.org/>`_ to execute your tests on a nightly basis.
+`Jenkins <https://www.jenkins.io//>`_ to execute your tests on a nightly basis.
 ChipTools makes this easy to do by allowing your unit tests to be run using
 external test runners like Nosetests or Pytest. To enable a unit test to be run
 using an external test runner simply add a *project* attribute to the test

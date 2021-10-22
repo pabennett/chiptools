@@ -487,7 +487,7 @@ output:
 
 .. image:: max_hold_sinusoid_single_sequence.png
 
-.. note:: For this example, graph generation requires `Matplotlib <http://matplotlib.org/>`_ (optionally with `Seaborn <http://stanford.edu/~mwaskom/software/seaborn/>`_)
+.. note:: For this example, graph generation requires `Matplotlib <https://matplotlib.org/>`_ (optionally with `Seaborn <http://seaborn.pydata.org/>`_)
 
 Plots such as these provide a powerful diagnostic tool when debugging
 components or analysing performance.
